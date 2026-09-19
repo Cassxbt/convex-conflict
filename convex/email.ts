@@ -3,7 +3,8 @@ import { components, internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const agentmail = new AgentMail(components.agentmail, {
+// Vendored component: codegen currently omits its internalActions from ComponentApi; runtime has them.
+export const agentmail = new AgentMail(components.agentmail as any, {
   onMessageReceived: internal.email.onMessageReceived,
 });
 
@@ -29,6 +30,19 @@ export const onMessageReceived = internalMutation({
       body: message.text ?? message.extracted_text ?? "",
       receivedAt: Date.now(),
       stage: "received",
+    });
+  },
+});
+
+// Pre-flight: prove outbound replies land in the original thread with delivery tracking.
+export const replyInThread = internalMutation({
+  args: { prospectId: v.id("prospects"), text: v.string() },
+  handler: async (ctx, { prospectId, text }) => {
+    const p = await ctx.db.get(prospectId);
+    if (!p) throw new Error("prospect not found");
+    return agentmail.replyToMessage(ctx, p.inboxId, p.messageId, {
+      text,
+      labels: ["conflict-clear", "receipt"],
     });
   },
 });
