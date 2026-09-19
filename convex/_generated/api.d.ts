@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as board from "../board.js";
 import type * as demo from "../demo.js";
 import type * as email from "../email.js";
 import type * as extract from "../extract.js";
@@ -25,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  board: typeof board;
   demo: typeof demo;
   email: typeof email;
   extract: typeof extract;
