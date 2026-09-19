@@ -17,6 +17,7 @@ export async function searchCompanies(apiKey: string, q: string, size = 10) {
   const res = await fetch(`${BASE}/search/companies?q=${encodeURIComponent(q)}&items_per_page=${size}`, {
     headers: authHeader(apiKey),
   });
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`CH search ${res.status}: ${await res.text()}`);
   const json = await res.json();
   return (json.items ?? []).map((i: any) => ({
@@ -33,7 +34,7 @@ export async function getCompany(apiKey: string, companyNumber: string): Promise
   return {
     companyNumber: j.company_number,
     name: j.company_name,
-    status: j.company_status,
+    status: j.company_status ?? "unknown",
     previousNames: (j.previous_company_names ?? []).map((p: any) => ({
       name: p.name,
       from: p.effective_from,

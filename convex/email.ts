@@ -20,7 +20,7 @@ export const onMessageReceived = internalMutation({
       .withIndex("by_thread", (q) => q.eq("threadId", message.thread_id))
       .first();
     if (existing) return;
-    await ctx.db.insert("prospects", {
+    const prospectId = await ctx.db.insert("prospects", {
       inboxId: message.inbox_id,
       threadId: message.thread_id,
       messageId: message.message_id,
@@ -31,6 +31,7 @@ export const onMessageReceived = internalMutation({
       receivedAt: Date.now(),
       stage: "received",
     });
+    await ctx.scheduler.runAfter(0, internal.intake.startIntake, { prospectId });
   },
 });
 

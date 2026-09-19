@@ -74,7 +74,7 @@ export default defineSchema({
       v.literal("ambiguous"),
       v.literal("unresolved"),
     ),
-    candidates: v.array(v.object({ companyNumber: v.string(), name: v.string(), source: v.string() })),
+    candidates: v.array(v.object({ companyNumber: v.string(), name: v.string(), source: v.string(), previousNames: v.array(v.string()), primary: v.boolean() })),
     evidence: v.array(
       v.object({
         kind: v.union(v.literal("registry"), v.literal("website"), v.literal("court_list"), v.literal("press")),
@@ -98,11 +98,15 @@ export default defineSchema({
         via: v.string(),
       }),
     ),
+    reasons: v.array(v.string()),
+    matterType: v.string(),
+    summary: v.string(),
     searchedParties: v.array(v.string()),
     decidedAt: v.number(),
     reviewer: v.optional(v.string()),
     reviewedAt: v.optional(v.number()),
     reviewerNote: v.optional(v.string()),
     outboundMessageId: v.optional(v.string()),
+    letterText: v.optional(v.string()),
   }).index("by_prospect", ["prospectId"]),
 });
