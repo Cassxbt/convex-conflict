@@ -13,7 +13,12 @@ export const agentmail = new AgentMail(components.agentmail as any, {
 export const onMessageReceived = internalMutation({
   args: { message: v.any(), thread: v.any(), eventId: v.string() },
   handler: async (ctx, { message }) => {
+    // The webhook is org-wide. Only mail that lands in the case inbox is an instruction;
+    // anything the case inbox itself sent, or another inbox received, is ignored.
+    const caseInbox = process.env.AGENTMAIL_INBOX_ID;
     const from: string = message.from ?? "";
+    if (caseInbox && message.inbox_id !== caseInbox) return;
+    if (caseInbox && from.includes(caseInbox)) return;
     const senderDomain = from.includes("@") ? from.split("@").pop()!.replace(/>$/, "").toLowerCase() : undefined;
     const existing = await ctx.db
       .query("prospects")
