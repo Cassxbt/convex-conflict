@@ -23,7 +23,7 @@ export function Proof() {
     { label: `${stats.previousNames} previous names expanded across ${stats.entities} registry entities`, state: "verified", note: "registryEntities table, populated by Companies House API calls made during screens" },
     { label: `${stats.sent} letters handed to AgentMail on the original email thread`, state: stats.sent > 0 ? "verified" : "not_here", note: stats.sent > 0 ? "outbound ids stored on the verdict when the reply is queued; delivery status lives in the AgentMail component's outbound table and is not recomputed here" : "no email-originated record has completed yet; console records are never sent" },
     { label: `${stats.reviewed} partner reviews recorded beside a verdict`, state: stats.reviewed > 0 ? "verified" : "not_here", note: "reviewer, note and time on the verdict row; the engine's verdict is never overwritten" },
-    { label: "Deterministic engine, 15 tests", state: "reported", note: "shared/engine.ts and test/engine.test.ts in the repository; this page does not run the suite" },
+    { label: "Deterministic engine, 16 tests", state: "reported", note: "shared/engine.ts and test/engine.test.ts in the repository; this page does not run the suite" },
     { label: "Firecrawl changes entity resolution on a real brand site", state: "reported", note: "scripts/preflight-gate.ts runs the deployed Firecrawl action on thewhiskyexchange.com and compares the number it finds with the register's keyword result; this page does not run it" },
   ] : [];
 

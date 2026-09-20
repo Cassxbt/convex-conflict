@@ -1,0 +1,6 @@
+Conflict Clear
+Copyright 2026 cassxbt
+
+components/agentmail is vendored from @agentmail/convex 0.1.0 (Apache License 2.0),
+Copyright AgentMail. The only change is the component environment declaration in
+components/agentmail/convex.config.ts. The license text is at components/agentmail/LICENSE.

@@ -27,7 +27,7 @@ export const listProspects = query({
         demo: p.inboxId === "demo",
         verdict: verdict?.verdict ?? null,
         reviewer: verdict?.reviewer ?? null,
-        matterType: verdict?.matterType ?? null,
+        matterType: p.inboxId === "demo" ? verdict?.matterType ?? null : null,
       };
     }));
   },
@@ -40,7 +40,9 @@ export const reviewQueue = query({
     const rows = await Promise.all(decided.map(async (p) => {
       const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).first();
       const email = p.inboxId !== "demo";
-      return verdict && verdict.verdict !== "CLEAR"
+      // Every state waits for a recorded decision. CLEAR sent a preliminary letter and needs
+      // confirmation; CONFLICT and NEEDS_REVIEW need a resolution.
+      return verdict
         ? { prospectId: p._id, from: publicSender(p.from, p.inboxId), email, subject: email ? "(arrived by email)" : p.subject ?? null, verdict: verdict.verdict, reasons: email ? [`${verdict.reasons.length} reasons on file; unlock the record with the staff passphrase`] : verdict.reasons, decidedAt: verdict.decidedAt }
         : null;
     }));
@@ -67,7 +69,7 @@ export const review = mutation({
   args: {
     prospectId: v.id("prospects"),
     reviewer: v.string(),
-    decision: v.union(v.literal("confirm_hold"), v.literal("decline"), v.literal("proceed_with_consent")),
+    decision: v.union(v.literal("confirm_hold"), v.literal("decline"), v.literal("proceed_with_consent"), v.literal("confirm_clear")),
     note: v.string(),
     staffKey: v.optional(v.string()),
   },

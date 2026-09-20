@@ -48,6 +48,8 @@ export type Context = {
   unextracted?: string[];
   // The sender's corporate domain could not be read, so the prospect's entity is unpinned.
   senderSiteUnavailable?: string;
+  // The site was read but names no registered company number, so the entity is still unpinned.
+  senderSiteNoNumber?: string;
   // Full-text hits in the matter history on a raw name that no candidate matched.
   similar?: { prospectPartyId: string; matchedName: string; matterRef: string; role: Role }[];
 };
@@ -130,6 +132,10 @@ export function decide(parties: ProspectParty[], matters: MatterParty[], context
   if (context.senderSiteUnavailable) {
     needsReview = true;
     reasons.push(`the sender's site ${context.senderSiteUnavailable} could not be read, so the prospect's entity is unpinned`);
+  }
+  if (context.senderSiteNoNumber) {
+    needsReview = true;
+    reasons.push(`the sender's site ${context.senderSiteNoNumber} was read but names no registered company number, so the prospect's entity is unpinned`);
   }
   for (const sim of context.similar ?? []) {
     needsReview = true;

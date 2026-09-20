@@ -51,6 +51,9 @@ async function run(step: WorkflowCtx, prospectId: Id<"prospects">): Promise<void
     const siteNumber = siteEvidence.find((e) => e.companyNumbers.length > 0)?.companyNumbers[0];
     const corporate = !!domain && !FREE_MAIL.has(domain);
     const siteUnreadable = corporate && (siteEvidence.length === 0 || siteEvidence.every((e) => e.snippet.startsWith("ERROR")));
+    // UK companies must show their registered number on their website; a corporate site that was
+    // read but names no number leaves the prospect's entity unpinned, and the case holds.
+    const siteNoNumber = corporate && !siteUnreadable && !siteNumber;
 
     // Belt and braces on the model: the same organisation named twice is one party.
     const seen = new Set<string>();
@@ -79,6 +82,7 @@ async function run(step: WorkflowCtx, prospectId: Id<"prospects">): Promise<void
       summary: extracted.summary,
       unextracted: unextractedNames(prospect.body, parties.map((p) => p.name)),
       senderSiteUnavailable: siteUnreadable ? domain : undefined,
+      senderSiteNoNumber: siteNoNumber ? domain : undefined,
     });
     await step.runAction(internal.letters.sendOutcome, { prospectId, verdictId: decision.verdictId }, { retry: true });
 }
@@ -108,8 +112,8 @@ export const recordParty = internalMutation({
 // The verdict is computed inside one mutation over the firm's current history, so the
 // record and the state it was decided against are consistent.
 export const decideAndRecord = internalMutation({
-  args: { prospectId: v.id("prospects"), matterType: v.string(), summary: v.string(), unextracted: v.optional(v.array(v.string())), senderSiteUnavailable: v.optional(v.string()) },
-  handler: async (ctx, { prospectId, matterType, summary, unextracted, senderSiteUnavailable }) => {
+  args: { prospectId: v.id("prospects"), matterType: v.string(), summary: v.string(), unextracted: v.optional(v.array(v.string())), senderSiteUnavailable: v.optional(v.string()), senderSiteNoNumber: v.optional(v.string()) },
+  handler: async (ctx, { prospectId, matterType, summary, unextracted, senderSiteUnavailable, senderSiteNoNumber }) => {
     const partiesDocs = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
     const parties: ProspectParty[] = partiesDocs.map((p) => ({
       id: p._id, rawName: p.rawName, side: p.side, resolution: p.resolution,
@@ -140,7 +144,7 @@ export const decideAndRecord = internalMutation({
         if (!already) similar.push({ prospectPartyId: p.id, matchedName: mp.name, matterRef: refs.get(mp.matterId) ?? mp.matterId, role: mp.role });
       }
     }
-    const d = decide(parties, matterParties, { unextracted, senderSiteUnavailable, similar });
+    const d = decide(parties, matterParties, { unextracted, senderSiteUnavailable, senderSiteNoNumber, similar });
     const verdictId = await ctx.db.insert("verdicts", {
       prospectId,
       verdict: d.verdict,
@@ -167,8 +171,7 @@ export const failClosed = internalMutation({
       // but the case is downgraded to NEEDS_REVIEW so it reaches the partner queue, and the
       // notice is tried once more.
       await ctx.db.patch(existing._id, {
-        verdict: "NEEDS_REVIEW",
-        originalVerdict: existing.originalVerdict ?? existing.verdict,
+        ...(existing.verdict === "CLEAR" ? { verdict: "NEEDS_REVIEW", originalVerdict: existing.originalVerdict ?? existing.verdict } : {}),
         reasons: [...existing.reasons, `outcome step failed after the verdict: ${error}`],
       });
       await ctx.db.patch(prospectId, { stage: "decided" });

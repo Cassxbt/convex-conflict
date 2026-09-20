@@ -20,7 +20,7 @@ export function Home() {
           </div>
           <h1>Keyword search says clear.<br />The register says former client.</h1>
           <p className="lede-lg">
-            A prospect emails the firm. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter. A solicitor signs off every state.
+            A prospect emails the firm. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter. Every state waits on the partner queue for a recorded decision.
           </p>
           <div className="cta-row">
             <a className="btn primary inline" href="#/app">Open the console<ArrowRight size={16} strokeWidth={2} aria-hidden /></a>
@@ -28,7 +28,7 @@ export function Home() {
           </div>
           <p className="status-line mono">
             {stats ? <>
-              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 15 tests
+              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 16 tests
             </> : "connecting…"}
           </p>
         </div>
@@ -103,7 +103,7 @@ export function Home() {
           </li>
           <li>
             <h3><Globe size={16} strokeWidth={1.75} aria-hidden />Firecrawl</h3>
-            <p><b>Does:</b> reads the sender's homepage and terms page and lifts the registered company number and legal name a brand actually trades under. If the site cannot be read, the case is held.</p>
+            <p><b>Does:</b> reads the sender's homepage and terms page and lifts the registered company number and legal name a brand actually trades under. If the site cannot be read, or names no registered number, the case is held.</p>
             <p className="counter"><b>Remove it:</b> a register keyword search for "The Whisky Exchange" returns The Whisky Exchange Limited (14220596) first. The trading page says Speciality Drinks Limited (04449145). Recorded in <span className="mono">scripts/preflight-gate.ts</span>: wrong entity, wrong history.</p>
           </li>
           <li>
@@ -156,9 +156,9 @@ export function Home() {
             <tr><td>Website evidence</td><td><span className="ok">Real.</span> Firecrawl reads the sender's homepage and terms page when the sender has a corporate domain; URL, snippet and time are stored on the record. Free-mail and reserved domains are skipped.</td></tr>
             <tr><td>Email round trip</td><td><span className="ok">Real.</span> The case inbox receives through a signed AgentMail webhook and replies on the original thread. Records opened from the console are marked <span className="mono">demo</span>: the letter is recorded, not sent.</td></tr>
             <tr><td>The firm and its matters</td><td><span className="warn">Fictional.</span> Hollin &amp; Vance LLP does not exist. Twelve matters were seeded so the register has something real to hit; the company names and numbers in them are real.</td></tr>
-            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v2</span>, fifteen tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed or mislabelled party is a known limit, and the scan exists to catch it.</td></tr>
-            <tr><td>Legal status</td><td><span className="warn">A screening aid.</span> CLEAR is a recommendation to the supervising solicitor, who remains responsible under SRA Code paragraph 6.</td></tr>
-            <tr><td>Access</td><td><span className="warn">Open, with a guard.</span> The console is open so a judge can use it. Records that arrived by email show sender domain, verdict and registered candidates only; the message, names, reasons and letter are withheld and reviewing them needs the staff passphrase. Records opened from the console are fictional and fully open. A firm would put all of it behind its identity provider.</td></tr>
+            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v2</span>, sixteen tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed or mislabelled party is a known limit, and the scan exists to catch it.</td></tr>
+            <tr><td>Legal status</td><td><span className="warn">A screening aid.</span> CLEAR is a recommendation; the preliminary letter says so, and the case sits on the partner queue until a named person confirms or holds it. The supervising solicitor remains responsible under SRA Code paragraph 6.</td></tr>
+            <tr><td>Access</td><td><span className="warn">Open, with guards.</span> The console is open so a judge can use it: rate-limited, size-limited, and marked public. Records that arrived by email show sender domain, verdict and registered candidates only; the message, names, reasons, matter type and letter are withheld and reviewing them needs the staff passphrase. Records opened from the console are fictional and fully open. A firm would put all of it behind its identity provider.</td></tr>
           </tbody>
         </table>
       </section>

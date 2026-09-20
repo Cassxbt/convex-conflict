@@ -72,4 +72,5 @@ export declare const components: {
   agentmail: import("../../components/agentmail/_generated/component.js").ComponentApi<"agentmail">;
   workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
   workpool: import("@convex-dev/workpool/_generated/component.js").ComponentApi<"workpool">;
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
 };

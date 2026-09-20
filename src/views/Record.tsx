@@ -135,7 +135,7 @@ export function Record({ id }: { id: Id<"prospects"> }) {
         <section className="panel" aria-labelledby="letter-h">
           <div className="panel-head row">
             <h2 id="letter-h"><ScrollText size={16} strokeWidth={1.75} aria-hidden />{verdict.verdict === "CLEAR" ? "Engagement draft" : "Hold notice"}</h2>
-            <span className="meta">{verdict.outboundMessageId ? "sent in thread" : "demo · recorded, not sent"}</span>
+            <span className="meta">{verdict.outboundMessageId ? `handed to AgentMail · ${verdict.delivery ?? "status unknown"}` : "demo · recorded, not sent"}</span>
           </div>
           <pre className="letter">{verdict.letterText}</pre>
         </section>

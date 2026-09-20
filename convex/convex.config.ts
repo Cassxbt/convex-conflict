@@ -5,6 +5,7 @@ import firecrawl from "@firecrawl/firecrawl-convex/convex.config";
 import agentmail from "../components/agentmail/convex.config";
 import workflow from "@convex-dev/workflow/convex.config";
 import workpool from "@convex-dev/workpool/convex.config";
+import rateLimiter from "@convex-dev/rate-limiter/convex.config";
 
 const app = defineApp({
   env: {
@@ -35,5 +36,6 @@ app.use(agentmail, {
 });
 app.use(workflow);
 app.use(workpool);
+app.use(rateLimiter);
 
 export default app;

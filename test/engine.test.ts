@@ -151,3 +151,12 @@ test("unextractedNames does not let a short extracted name hide a distinct longe
   const body = "We act for Ocado Limited and want to sue Ocado Technology Limited.";
   assert.deepEqual(unextractedNames(body, ["Ocado"]), ["Ocado Technology Limited"]);
 });
+
+test("NEEDS_REVIEW: sender site read but no registered number found", () => {
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Ocado Retail", side: "prospect", resolution: "resolved", candidates: [ids("03875000", "OCADO RETAIL LIMITED")] },
+  ];
+  const d = decide(parties, matters, { senderSiteNoNumber: "ocado.com" });
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.reasons.some((r) => r.includes("names no registered company number")));
+});

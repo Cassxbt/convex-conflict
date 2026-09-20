@@ -7,12 +7,12 @@
 - **Repo:** https://github.com/Cassxbt/convex-conflict
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://descriptive-goldfish-956.convex.cloud
-- **Components:** @convex-dev/static-hosting, @convex-dev/workflow, @convex-dev/workpool
+- **Components:** @convex-dev/static-hosting, @convex-dev/workflow, @convex-dev/workpool, @convex-dev/rate-limiter
 - **Convex features:** schema, tables, indexes, full-text search, queries, mutations, actions, HTTP actions, scheduled functions, realtime queries
 - **Auth:** none
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-20T13:50:00Z
+- **Last updated:** 2026-09-20T16:40:00Z
 
 ## Log
 
@@ -45,3 +45,6 @@ Third pass on the reviewer's remaining findings. Read access: a record that arri
 
 ### 2026-09-20 - a52ad09
 Fourth pass. The restricted projection for email-originated records now also withholds the searched names (only resolved company names remain), the matter type, the history hits (a count is shown) and the matched matters. The completeness scan treats only an exact normalised match as covered, so a longer name that merely contains an extracted one always holds the case. When an outcome step fails after a verdict, the verdict is downgraded to NEEDS_REVIEW with the engine's answer kept as `originalVerdict`, so the case reaches the partner queue; the record page says so. Proof page copy corrected for locked records (`convex/demo.ts`, `shared/engine.ts`, `convex/intake.ts`, `convex/schema.ts`, `src/views/Record.tsx`, `src/views/Proof.tsx`).
+
+### 2026-09-20 - working tree
+Fifth pass on review findings. The public intake list no longer returns the matter type for records that arrived by email. A corporate sender site that was read but names no registered company number now holds the case (UK companies must show the number on their site), with a test (16 in total). The console is rate-limited with the `@convex-dev/rate-limiter` component (a burst of four, six a minute, sixty an hour), bodies are capped at 2,000 characters, and the form says its records are public and fictional. Every verdict now waits on the partner queue: CLEAR needs a recorded confirmation before engagement, so the front page says "waits for a recorded decision" rather than "signs off". The record page shows the letter's delivery state read from the AgentMail component's outbound table instead of calling a queued id "sent". A post-verdict failure downgrades only CLEAR; CONFLICT and NEEDS_REVIEW keep their badge. README, MIT LICENSE and a NOTICE for the vendored Apache-2.0 AgentMail component added. Convex features: rate-limiter component, queries (`convex/board.ts`, `convex/demo.ts`, `convex/intake.ts`, `convex/convex.config.ts`, `shared/engine.ts`, `test/engine.test.ts`, `src/views/Intake.tsx`, `src/views/Review.tsx`, `src/views/Record.tsx`, `README.md`, `NOTICE`).

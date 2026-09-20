@@ -14,7 +14,7 @@ export function Review() {
   const [note, setNote] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
-  async function decide(prospectId: Id<"prospects">, decision: "confirm_hold" | "decline" | "proceed_with_consent") {
+  async function decide(prospectId: Id<"prospects">, decision: "confirm_hold" | "decline" | "proceed_with_consent" | "confirm_clear") {
     setBusy(prospectId);
     try {
       await review({ prospectId, reviewer, decision, note: note[prospectId] ?? "", staffKey: staffKey || undefined });
@@ -30,7 +30,7 @@ export function Review() {
     <div className="review">
       <header className="panel-head">
         <h1><ShieldCheck size={18} strokeWidth={1.75} aria-hidden />Partner review</h1>
-        <p className="lede">Everything the engine could not clear on its own. Your decision is recorded beside the verdict, never over it.</p>
+        <p className="lede">Every screen waits here for a recorded decision: a CLEAR needs confirming, a hold needs resolving. Your decision is recorded beside the verdict, never over it.</p>
       </header>
       <div className="row">
         <label className="field inline"><span className="meta">Reviewing as</span><input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="Your name" /></label>
@@ -48,9 +48,10 @@ export function Review() {
           <ol className="reasons">{q.reasons.map((r, i) => <li key={i}>{r}</li>)}</ol>
           <label className="field dark"><span className="meta">Note for the file</span><input value={note[q.prospectId] ?? ""} onChange={(e) => setNote({ ...note, [q.prospectId]: e.target.value })} placeholder="What you checked, and why" /></label>
           <div className="actions">
-            <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "confirm_hold")}><PauseCircle size={15} strokeWidth={1.75} aria-hidden />Confirm hold</button>
+            {q.verdict === "CLEAR" && <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "confirm_clear")}><Check size={15} strokeWidth={1.75} aria-hidden />Confirm clear and engage</button>}
+            <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "confirm_hold")}><PauseCircle size={15} strokeWidth={1.75} aria-hidden />{q.verdict === "CLEAR" ? "Hold instead" : "Confirm hold"}</button>
             <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "decline")}><Ban size={15} strokeWidth={1.75} aria-hidden />Decline instruction</button>
-            <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "proceed_with_consent")}><Check size={15} strokeWidth={1.75} aria-hidden />Proceed with informed consent</button>
+            {q.verdict !== "CLEAR" && <button type="button" className="btn ghost" disabled={busy === q.prospectId || !reviewer.trim()} onClick={() => decide(q.prospectId, "proceed_with_consent")}><Check size={15} strokeWidth={1.75} aria-hidden />Proceed with informed consent</button>}
           </div>
         </section>
       ))}
