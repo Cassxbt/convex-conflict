@@ -7,7 +7,8 @@
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "deploy": "npx @convex-dev/static-hosting deploy",
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "verify": "node --experimental-strip-types scripts/verify.ts"
   },
   "keywords": [],
   "author": "",
