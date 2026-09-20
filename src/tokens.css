@@ -1,0 +1,112 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app
+ * theme: custom (vibe: "instrument panel for a law firm" · paper oklch(98.5% 0.004 250) · accent oklch(58% 0.20 256) cobalt · Inter Tight + Inter + JetBrains Mono)
+ * axes: light / grotesk-sans / cool
+ */
+:root {
+  --color-paper: oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96.5% 0.005 250);
+  --color-rule: oklch(90% 0.008 250);
+  --color-rule-2: oklch(84% 0.01 250);
+  --color-neutral: oklch(56% 0.014 255);
+  --color-ink-2: oklch(34% 0.018 257);
+  --color-ink: oklch(24% 0.02 258);
+  --color-accent: oklch(58% 0.2 256);
+  --color-accent-hover: oklch(52% 0.2 256);
+  --color-accent-ink: oklch(98% 0.01 256);
+  --color-accent-tint: oklch(94% 0.04 256);
+  --color-focus: oklch(58% 0.2 256);
+  --color-graphite: oklch(22% 0.016 260);
+  --color-graphite-2: oklch(27% 0.016 260);
+  --color-graphite-rule: oklch(34% 0.016 260);
+  --color-graphite-ink: oklch(94% 0.008 250);
+  --color-graphite-muted: oklch(70% 0.012 250);
+  --color-clear: oklch(60% 0.15 155);
+  --color-clear-tint: oklch(95% 0.04 155);
+  --color-conflict: oklch(56% 0.19 25);
+  --color-conflict-tint: oklch(95% 0.03 25);
+  --color-review: oklch(70% 0.16 75);
+  --color-review-ink: oklch(45% 0.12 75);
+  --color-review-tint: oklch(96% 0.05 85);
+
+  --font-display: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-display: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-press: 120ms;
+  --dur-short: 200ms;
+  --dur-bar: 300ms;
+
+  --radius-control: 6px;
+  --radius-panel: 8px;
+  --radius-band: 10px;
+  --rule: 1px solid var(--color-rule);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-paper: oklch(15% 0.012 255);
+    --color-paper-2: oklch(19% 0.012 255);
+    --color-rule: oklch(27% 0.012 255);
+    --color-rule-2: oklch(34% 0.012 255);
+    --color-neutral: oklch(62% 0.012 255);
+    --color-ink-2: oklch(80% 0.01 255);
+    --color-ink: oklch(94% 0.008 250);
+    --color-accent: oklch(70% 0.17 256);
+    --color-accent-hover: oklch(76% 0.16 256);
+    --color-accent-ink: oklch(16% 0.02 256);
+    --color-accent-tint: oklch(26% 0.06 256);
+    --color-focus: oklch(70% 0.17 256);
+    --color-graphite: oklch(20% 0.014 260);
+    --color-graphite-2: oklch(25% 0.014 260);
+    --color-graphite-rule: oklch(32% 0.014 260);
+    --color-clear: oklch(72% 0.14 155);
+    --color-clear-tint: oklch(24% 0.05 155);
+    --color-conflict: oklch(70% 0.17 25);
+    --color-conflict-tint: oklch(24% 0.05 25);
+    --color-review: oklch(78% 0.15 80);
+    --color-review-ink: oklch(82% 0.13 80);
+    --color-review-tint: oklch(24% 0.05 80);
+  }
+}
+:root[data-theme="dark"] {
+  --color-paper: oklch(15% 0.012 255);
+  --color-paper-2: oklch(19% 0.012 255);
+  --color-rule: oklch(27% 0.012 255);
+  --color-rule-2: oklch(34% 0.012 255);
+  --color-neutral: oklch(62% 0.012 255);
+  --color-ink-2: oklch(80% 0.01 255);
+  --color-ink: oklch(94% 0.008 250);
+  --color-accent: oklch(70% 0.17 256);
+  --color-accent-hover: oklch(76% 0.16 256);
+  --color-accent-ink: oklch(16% 0.02 256);
+  --color-accent-tint: oklch(26% 0.06 256);
+  --color-focus: oklch(70% 0.17 256);
+  --color-graphite: oklch(20% 0.014 260);
+  --color-graphite-2: oklch(25% 0.014 260);
+  --color-graphite-rule: oklch(32% 0.014 260);
+  --color-clear: oklch(72% 0.14 155);
+  --color-clear-tint: oklch(24% 0.05 155);
+  --color-conflict: oklch(70% 0.17 25);
+  --color-conflict-tint: oklch(24% 0.05 25);
+  --color-review: oklch(78% 0.15 80);
+  --color-review-ink: oklch(82% 0.13 80);
+  --color-review-tint: oklch(24% 0.05 80);
+}

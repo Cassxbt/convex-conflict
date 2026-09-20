@@ -20,10 +20,13 @@
     "@convex-dev/workflow": "^0.4.8",
     "@convex-dev/workpool": "^0.4.12",
     "@firecrawl/firecrawl-convex": "^0.1.1",
+    "cmdk": "^1.1.1",
     "convex": "^1.46.0",
+    "lucide-react": "^1.47.0",
     "openai": "^7.19.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "sonner": "^2.0.8"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
