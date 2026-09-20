@@ -63,3 +63,64 @@ export const review = mutation({
     await ctx.db.patch(prospectId, { stage: "reviewed" });
   },
 });
+
+// Numbers for the front page and the proof page. Everything here is read live from the
+// deployment; nothing is hard-coded, so the page cannot claim more than the database holds.
+export const stats = query({
+  args: {},
+  handler: async (ctx) => {
+    const prospects = await ctx.db.query("prospects").collect();
+    const verdicts = await ctx.db.query("verdicts").collect();
+    const entities = await ctx.db.query("registryEntities").collect();
+    const matters = await ctx.db.query("matters").collect();
+    const byVerdict = { CLEAR: 0, CONFLICT: 0, NEEDS_REVIEW: 0 } as Record<string, number>;
+    for (const v of verdicts) byVerdict[v.verdict]++;
+    const real = prospects.filter((p) => p.inboxId !== "demo");
+    const sent = verdicts.filter((v) => v.outboundMessageId).length;
+    const reviewed = verdicts.filter((v) => v.reviewer).length;
+    const previousNames = entities.reduce((n, e) => n + e.previousNames.length, 0);
+    const latestConflict = verdicts.filter((v) => v.verdict === "CONFLICT").sort((a, b) => b.decidedAt - a.decidedAt)[0] ?? null;
+    return {
+      screened: prospects.length,
+      realInbound: real.length,
+      demo: prospects.length - real.length,
+      byVerdict,
+      sent,
+      reviewed,
+      entities: entities.length,
+      previousNames,
+      matters: matters.length,
+      ruleVersion: verdicts[0]?.ruleVersion ?? "cc-rules-v1",
+      latestConflictId: latestConflict?.prospectId ?? null,
+      lastDecidedAt: verdicts.length ? Math.max(...verdicts.map((v) => v.decidedAt)) : null,
+    };
+  },
+});
+
+// Public proof listing: every record, its verdict and how it was reached. Sender addresses are
+// reduced to their domain because this page needs no login.
+export const proofList = query({
+  args: {},
+  handler: async (ctx) => {
+    const prospects = await ctx.db.query("prospects").order("desc").take(100);
+    return Promise.all(prospects.map(async (p) => {
+      const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).first();
+      const parties = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).collect();
+      return {
+        prospectId: p._id,
+        senderDomain: p.senderDomain ?? "unknown",
+        channel: p.inboxId === "demo" ? "console" : "email",
+        subject: p.subject ?? null,
+        receivedAt: p.receivedAt,
+        stage: p.stage,
+        verdict: verdict?.verdict ?? null,
+        ruleVersion: verdict?.ruleVersion ?? null,
+        hits: verdict?.hits.length ?? 0,
+        websiteEvidence: parties.some((x) => x.evidence.some((e) => e.kind === "website")),
+        previousNameHop: verdict?.hits.some((h) => h.via.includes("previous name") || h.via.includes("recorded as")) ?? false,
+        sent: !!verdict?.outboundMessageId,
+        reviewed: !!verdict?.reviewer,
+      };
+    }));
+  },
+});

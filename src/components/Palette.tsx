@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Command } from "cmdk";
-import { Inbox, ShieldCheck, Library, Play, FileText, CircleCheck, CircleAlert, CircleDashed } from "lucide-react";
+import { Inbox, ShieldCheck, Library, Play, FileText, CircleCheck, CircleAlert, CircleDashed, Home, FileSearch } from "lucide-react";
 import { FIXTURES, go } from "../lib/route";
 
 type Row = { _id: string; from: string; subject?: string | null; verdict: string | null };
@@ -25,7 +25,9 @@ export function Palette({ open, setOpen, rows, onRunFixture }: { open: boolean; 
       <Command.List>
         <Command.Empty>Nothing matches.</Command.Empty>
         <Command.Group heading="Go to">
-          <Command.Item onSelect={() => run(() => go("#/"))}><Inbox size={15} strokeWidth={1.75} />Intake</Command.Item>
+          <Command.Item onSelect={() => run(() => go("#/"))}><Home size={15} strokeWidth={1.75} />Front page</Command.Item>
+          <Command.Item onSelect={() => run(() => go("#/app"))}><Inbox size={15} strokeWidth={1.75} />Intake</Command.Item>
+          <Command.Item onSelect={() => run(() => go("#/proof"))}><FileSearch size={15} strokeWidth={1.75} />Proof</Command.Item>
           <Command.Item onSelect={() => run(() => go("#/review"))}><ShieldCheck size={15} strokeWidth={1.75} />Partner review</Command.Item>
           <Command.Item onSelect={() => run(() => go("#/matters"))}><Library size={15} strokeWidth={1.75} />Matter history</Command.Item>
         </Command.Group>

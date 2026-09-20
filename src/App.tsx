@@ -9,6 +9,8 @@ import { Intake } from "./views/Intake";
 import { Record } from "./views/Record";
 import { Review } from "./views/Review";
 import { Matters } from "./views/Matters";
+import { Home } from "./views/Home";
+import { Proof } from "./views/Proof";
 
 export default function App() {
   const route = useRoute();
@@ -26,7 +28,9 @@ export default function App() {
   return (
     <div className="shell">
       <Nav route={route} queueCount={queue?.length ?? 0} onPalette={() => setPalette(true)} />
-      <main id="main">
+      <main id="main" className={route.view === "home" ? "wide" : ""}>
+        {route.view === "home" && <Home />}
+        {route.view === "proof" && <Proof />}
         {route.view === "intake" && <Intake />}
         {route.view === "review" && <Review />}
         {route.view === "record" && <Record id={route.id} />}

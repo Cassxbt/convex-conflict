@@ -15,7 +15,7 @@ export function Record({ id }: { id: Id<"prospects"> }) {
 
   return (
     <div className="record">
-      <a href="#/" className="back"><ArrowLeft size={14} strokeWidth={2} aria-hidden />Intake</a>
+      <a href="#/app" className="back"><ArrowLeft size={14} strokeWidth={2} aria-hidden />Intake</a>
 
       <header className="dossier-head">
         <div>

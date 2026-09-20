@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import type { Id } from "../../convex/_generated/dataModel";
 
 export type Route =
+  | { view: "home" }
+  | { view: "proof" }
   | { view: "intake" }
   | { view: "review" }
   | { view: "matters" }
@@ -12,7 +14,9 @@ export function parseRoute(): Route {
   if (h.startsWith("record/")) return { view: "record", id: h.slice(7) as Id<"prospects"> };
   if (h === "review") return { view: "review" };
   if (h === "matters") return { view: "matters" };
-  return { view: "intake" };
+  if (h === "proof") return { view: "proof" };
+  if (h === "app" || h === "intake") return { view: "intake" };
+  return { view: "home" };
 }
 
 export function go(path: string) {
