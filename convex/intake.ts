@@ -7,7 +7,7 @@ import { decide, normalizeName, type MatterParty, type ProspectParty } from "../
 
 export const workflow = new WorkflowManager(components.workflow);
 
-const FREE_MAIL = new Set(["gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "proton.me", "protonmail.com", "live.com", "aol.com"]);
+const FREE_MAIL = new Set(["example.com", "example.org", "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "proton.me", "protonmail.com", "live.com", "aol.com"]);
 
 // EXTRACT -> EXPAND -> COMPARE -> HOLD / CLEAR. Every step is a Convex function so the run
 // survives restarts and every intermediate result is a row a judge can open.
