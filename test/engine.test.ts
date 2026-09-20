@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide, normalizeName, type MatterParty, type ProspectParty } from "../shared/engine.ts";
+import { decide, normalizeName, unextractedNames, type MatterParty, type ProspectParty } from "../shared/engine.ts";
 
 const matters: MatterParty[] = [
   { matterId: "m1", matterRef: "HV-2019-001", name: "Royal Mail plc", role: "former_client", companyNumber: "08680755" },
@@ -138,4 +138,15 @@ test("NEEDS_REVIEW: similar names in history that no candidate matched", () => {
   const d = decide(parties, matters, { similar: [{ prospectPartyId: "p1", matchedName: "Sandhurst Bakeries Ltd", matterRef: "HV-2026-011", role: "client" }] });
   assert.equal(d.verdict, "NEEDS_REVIEW");
   assert.ok(d.reasons.some((r) => r.includes("similar")));
+});
+
+test("unextractedNames finds a suffixed company the model dropped, and does not double count", () => {
+  const body = "Ocado Retail wants to instruct you against Reed Boardall Cold Storage Limited and Halden Cold Chain Ltd.\n\nLegal team, Ocado Retail Limited";
+  assert.deepEqual(unextractedNames(body, ["Ocado Retail", "Reed Boardall Cold Storage Limited"]), ["Halden Cold Chain Ltd"]);
+  assert.deepEqual(unextractedNames(body, ["Ocado Retail Limited", "Reed Boardall Cold Storage Limited", "Halden Cold Chain Ltd"]), []);
+});
+
+test("unextractedNames does not let a short extracted name hide a distinct longer one", () => {
+  const body = "We act for Ocado Limited and want to sue Ocado Technology Limited.";
+  assert.deepEqual(unextractedNames(body, ["Ocado"]), ["Ocado Technology Limited"]);
 });

@@ -1,15 +1,22 @@
+import { useState } from "react";
 import { useQuery } from "convex/react";
-import { ArrowLeft, Building2, ExternalLink, Globe, Hash, ScrollText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Building2, ExternalLink, Globe, Hash, Lock, ScrollText, ShieldCheck } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { fmtTime } from "../lib/route";
 import { Empty, Role, Stage, Verdict } from "../components/ui";
 
+function readKey() { try { return sessionStorage.getItem("cc-staff-key") ?? ""; } catch { return ""; } }
+
 export function Record({ id }: { id: Id<"prospects"> }) {
-  const rec = useQuery(api.demo.record, { prospectId: id });
+  const [staffKey, setStaffKey] = useState(readKey);
+  const [draft, setDraft] = useState("");
+  const rec = useQuery(api.demo.record, { prospectId: id, staffKey: staffKey || undefined });
   if (rec === undefined) return <Empty>Loading…</Empty>;
   if (rec === null) return <Empty>No such record.</Empty>;
   const { prospect, parties, verdict, matters } = rec;
+  const restricted = rec.access === "restricted";
+  const unlock = () => { try { sessionStorage.setItem("cc-staff-key", draft); } catch {} setStaffKey(draft); };
   const matterById = new Map(matters.map((m) => [m!._id, m!]));
   const inFlight = !verdict;
 
@@ -26,10 +33,23 @@ export function Record({ id }: { id: Id<"prospects"> }) {
         <div className="dossier-state">{verdict ? <Verdict v={verdict.verdict} size="lg" /> : <Stage stage={prospect.stage} />}</div>
       </header>
 
-      <section className="panel quote-panel">
-        <blockquote>{prospect.body}</blockquote>
-        <span className="meta">thread <span className="mono">{prospect.threadId}</span></span>
-      </section>
+      {restricted ? (
+        <section className="panel restricted">
+          <div className="row">
+            <p><Lock size={14} strokeWidth={2} aria-hidden /> This instruction arrived by email and may concern a real person. The message, subject, thread, unresolved names, reasons and letter are withheld without the staff passphrase. Registered-company candidates and the verdict are shown because they are public register data.</p>
+            <form className="unlock" onSubmit={(e) => { e.preventDefault(); unlock(); }}>
+              <input type="password" placeholder="Staff passphrase" value={draft} onChange={(e) => setDraft(e.target.value)} autoComplete="off" aria-label="Staff passphrase" />
+              <button type="submit" className="btn outline inline">Unlock</button>
+            </form>
+          </div>
+          {staffKey && <p className="field-error">That passphrase did not unlock this record.</p>}
+        </section>
+      ) : (
+        <section className="panel quote-panel">
+          <blockquote>{prospect.body}</blockquote>
+          <span className="meta">thread <span className="mono">{prospect.threadId}</span></span>
+        </section>
+      )}
 
       <section className="panel" aria-labelledby="parties-h">
         <div className="panel-head row">

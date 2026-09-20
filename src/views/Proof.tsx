@@ -23,8 +23,8 @@ export function Proof() {
     { label: `${stats.previousNames} previous names expanded across ${stats.entities} registry entities`, state: "verified", note: "registryEntities table, populated by Companies House API calls made during screens" },
     { label: `${stats.sent} letters handed to AgentMail on the original email thread`, state: stats.sent > 0 ? "verified" : "not_here", note: stats.sent > 0 ? "outbound ids stored on the verdict when the reply is queued; delivery status lives in the AgentMail component's outbound table and is not recomputed here" : "no email-originated record has completed yet; console records are never sent" },
     { label: `${stats.reviewed} partner reviews recorded beside a verdict`, state: stats.reviewed > 0 ? "verified" : "not_here", note: "reviewer, note and time on the verdict row; the engine's verdict is never overwritten" },
-    { label: "Deterministic engine, 13 tests", state: "reported", note: "shared/engine.ts and test/engine.test.ts in the repository; this page does not run the suite" },
-    { label: "Firecrawl changes entity resolution on a real brand site", state: "reported", note: "thewhiskyexchange.com/terms names Speciality Drinks Limited 04449145; a register keyword search returns 14220596. Recorded in the repository's pre-flight scripts" },
+    { label: "Deterministic engine, 15 tests", state: "reported", note: "shared/engine.ts and test/engine.test.ts in the repository; this page does not run the suite" },
+    { label: "Firecrawl changes entity resolution on a real brand site", state: "reported", note: "scripts/preflight-gate.ts runs the deployed Firecrawl action on thewhiskyexchange.com and compares the number it finds with the register's keyword result; this page does not run it" },
   ] : [];
 
   return (
@@ -47,7 +47,7 @@ export function Proof() {
       )}
 
       <section className="band">
-        <div className="band-head"><h2><FileSearch size={14} strokeWidth={2} aria-hidden />Each stage has run, and says how it is known</h2><span className="meta">{stats?.ruleVersion}</span></div>
+        <div className="band-head"><h2><FileSearch size={14} strokeWidth={2} aria-hidden />Each stage has run, and says how it is known</h2><span className="meta">current {stats?.ruleVersion}{stats && stats.ruleVersionsOnFile.length > 1 ? ` · on file: ${stats.ruleVersionsOnFile.join(", ")}` : ""}</span></div>
         <table className="grid dark checks">
           <tbody>{checks.map((c) => <tr key={c.label}><td>{c.label}</td><td><StateTag s={c.state} /></td><td className="muted-dark">{c.note}</td></tr>)}</tbody>
         </table>
@@ -83,7 +83,7 @@ export function Proof() {
         <h2>What these pages are not</h2>
         <ul className="plain">
           <li><CircleCheck size={14} strokeWidth={2} aria-hidden /> A record marked <b>console</b> was pasted into the intake form; it ran the identical workflow but its letter was recorded, not sent.</li>
-          <li><CircleCheck size={14} strokeWidth={2} aria-hidden /> Sender addresses are shown as domains only. Full addresses live on the record and in the case inbox.</li>
+          <li><CircleCheck size={14} strokeWidth={2} aria-hidden /> Records that arrived by email are shown by sender domain, with the message, names, reasons and letter withheld unless the record is unlocked with the staff passphrase. Console records are fictional and open.</li>
           <li><CircleDashed size={14} strokeWidth={2} aria-hidden /> "Reported, not verified here" means the repository asserts it and this page did not recompute it. It is listed so it cannot be mistaken for a pass.</li>
         </ul>
       </section>

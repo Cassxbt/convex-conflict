@@ -354,3 +354,7 @@ main.wide { width: min(1240px, 100% - 2 * var(--space-sm)); }
 .plain { list-style: none; margin: var(--space-xs) 0 0; padding: 0; display: grid; gap: var(--space-2xs); color: var(--color-ink-2); font-size: var(--text-sm); }
 .plain li { display: flex; gap: var(--space-2xs); align-items: flex-start; }
 .plain svg { flex: none; margin-top: 3px; color: var(--color-neutral); }
+.restricted p { display: flex; gap: 8px; align-items: flex-start; color: var(--color-ink-2); max-width: 70ch; }
+.restricted svg { flex: none; margin-top: 3px; color: var(--color-review-ink); }
+.unlock { display: flex; gap: var(--space-2xs); align-items: center; }
+.unlock input { width: 200px; }

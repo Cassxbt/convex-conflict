@@ -192,3 +192,25 @@ export function decide(parties: ProspectParty[], matters: MatterParty[], context
 function matterRef(matters: MatterParty[], matterId: string): string {
   return matters.find((m) => m.matterId === matterId)?.matterRef ?? matterId;
 }
+
+// Company-shaped names in an email body. Extraction is a model call; this is the deterministic
+// check that it did not drop one. Names that are only a person, a trading name, or a company
+// without a suffix are outside its reach, and the honesty table says so.
+const COMPANY_SHAPED = /\b((?:[A-Z][A-Za-z&'.-]+\s+){0,5}[A-Z][A-Za-z&'.-]+\s+(?:Limited|Ltd\.?|PLC|plc|LLP|Inc\.?))\b/g;
+const GENERIC = new Set(["LIMITED", "LTD", "PLC", "LLP", "INC", "GROUP", "HOLDINGS", "SERVICES", "UK", "INTERNATIONAL", "THE", "AND", "OF"]);
+function distinct(n: string): string[] { return n.split(" ").filter((t) => t.length >= 3 && !GENERIC.has(t)); }
+
+export function unextractedNames(body: string, extracted: string[]): string[] {
+  const seen = extracted.map(normalizeName).filter(Boolean);
+  const out: string[] = [];
+  for (const m of body.matchAll(COMPANY_SHAPED)) {
+    const n = normalizeName(m[1]);
+    if (!n) continue;
+    // Covered when an extracted name equals it, or when the found name merely extends an extracted
+    // name that already carries at least two distinctive words (the same party, written longer).
+    const covered = seen.some((e) => e === n || (n.includes(e) && distinct(e).length >= 2) || (e.includes(n) && distinct(n).length >= 2));
+    if (covered) continue;
+    if (!out.some((o) => normalizeName(o) === n)) out.push(m[1].trim());
+  }
+  return out;
+}

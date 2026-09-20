@@ -22,15 +22,27 @@ export const submit = mutation({
   },
 });
 
+// Console records are fictional and fully public. A record that arrived by email may concern a
+// real person: without the staff passphrase the caller gets a projection with the body, subject,
+// thread, raw names, reasons and letter withheld; registered-company candidates stay, because
+// they are public register data.
 export const record = query({
-  args: { prospectId: v.id("prospects") },
-  handler: async (ctx, { prospectId }) => {
+  args: { prospectId: v.id("prospects"), staffKey: v.optional(v.string()) },
+  handler: async (ctx, { prospectId, staffKey }) => {
     const prospect = await ctx.db.get(prospectId);
     if (!prospect) return null;
     const parties = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
     const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).first();
     const matters = verdict ? await Promise.all([...new Set(verdict.hits.map((h) => h.matterId))].map((id) => ctx.db.get(id))) : [];
-    const shown = prospect.inboxId === "demo" ? prospect : { ...prospect, from: publicSender(prospect.from, prospect.inboxId) };
-    return { prospect: shown, parties, verdict, matters: matters.filter(Boolean) };
+    const isEmail = prospect.inboxId !== "demo";
+    const unlocked = !isEmail || (!!process.env.STAFF_KEY && staffKey === process.env.STAFF_KEY);
+    if (unlocked) return { access: "full" as const, prospect, parties, verdict, matters: matters.filter(Boolean) };
+    return {
+      access: "restricted" as const,
+      prospect: { ...prospect, from: publicSender(prospect.from, prospect.inboxId), subject: "(arrived by email)", body: "", threadId: "", messageId: "" },
+      parties: parties.map((p) => ({ ...p, rawName: p.resolution === "resolved" ? p.rawName : "(withheld)", evidence: [] })),
+      verdict: verdict ? { ...verdict, reasons: [`${verdict.reasons.length} reason${verdict.reasons.length === 1 ? "" : "s"} on file`], summary: "", letterText: undefined, reviewerNote: undefined } : null,
+      matters: matters.filter(Boolean),
+    };
   },
 });

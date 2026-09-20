@@ -3,25 +3,11 @@ import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
 import { internalMutation, internalQuery } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { decide, normalizeName, RULE_VERSION, type Context, type MatterParty, type ProspectParty } from "../shared/engine";
+import { decide, normalizeName, RULE_VERSION, unextractedNames, type Context, type MatterParty, type ProspectParty } from "../shared/engine";
 
 export const workflow = new WorkflowManager(components.workflow);
 
 const FREE_MAIL = new Set(["example.com", "example.org", "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "proton.me", "protonmail.com", "live.com", "aol.com"]);
-
-// Company-shaped names in the email body. Extraction is a model call; this is the deterministic
-// check that it did not drop one. Anything found here and not in the party list blocks CLEAR.
-const COMPANY_SHAPED = /\b((?:[A-Z][A-Za-z&'.-]+\s+){0,5}[A-Z][A-Za-z&'.-]+\s+(?:Limited|Ltd\.?|PLC|plc|LLP|Inc\.?))\b/g;
-export function unextractedNames(body: string, extracted: string[]): string[] {
-  const seen = extracted.map(normalizeName);
-  const out: string[] = [];
-  for (const m of body.matchAll(COMPANY_SHAPED)) {
-    const n = normalizeName(m[1]);
-    if (!n || seen.some((e) => e === n || e.includes(n) || n.includes(e))) continue;
-    if (!out.some((o) => normalizeName(o) === n)) out.push(m[1].trim());
-  }
-  return out;
-}
 
 const STOP = new Set(["AND", "THE", "OF", "GROUP", "HOLDINGS", "SERVICES", "INTERNATIONAL", "UK", "COMPANY", "TRADING", "SOLUTIONS", "LIMITED", "LTD", "PLC", "LLP"]);
 function distinctiveTokens(name: string): string[] {
@@ -176,7 +162,12 @@ export const failClosed = internalMutation({
   args: { prospectId: v.id("prospects"), error: v.string() },
   handler: async (ctx, { prospectId, error }) => {
     const existing = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).first();
-    if (existing) return;
+    if (existing) {
+      // The verdict stands; what failed was after it. Record that on the case and try the notice once more.
+      await ctx.db.patch(existing._id, { reasons: [...existing.reasons, `outcome step failed after the verdict: ${error}`] });
+      if (!existing.outboundMessageId && !existing.letterText) await ctx.scheduler.runAfter(0, internal.letters.sendOutcome, { prospectId, verdictId: existing._id });
+      return;
+    }
     const parties = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
     const verdictId = await ctx.db.insert("verdicts", {
       prospectId, verdict: "NEEDS_REVIEW", ruleVersion: RULE_VERSION, hits: [],

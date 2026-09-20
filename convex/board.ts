@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { RULE_VERSION } from "../shared/engine";
 
 // Records that arrived by email may belong to a real person. Public surfaces show the sender's
 // domain only; console (demo) records are fictional and shown in full.
@@ -20,7 +21,7 @@ export const listProspects = query({
       return {
         _id: p._id,
         from: publicSender(p.from, p.inboxId),
-        subject: p.subject,
+        subject: p.inboxId === "demo" ? p.subject : "(arrived by email)",
         receivedAt: p.receivedAt,
         stage: p.stage,
         demo: p.inboxId === "demo",
@@ -38,7 +39,10 @@ export const reviewQueue = query({
     const decided = await ctx.db.query("prospects").withIndex("by_stage", (q) => q.eq("stage", "decided")).collect();
     const rows = await Promise.all(decided.map(async (p) => {
       const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).first();
-      return verdict && verdict.verdict !== "CLEAR" ? { prospectId: p._id, from: publicSender(p.from, p.inboxId), email: p.inboxId !== "demo", subject: p.subject, verdict: verdict.verdict, reasons: verdict.reasons, decidedAt: verdict.decidedAt } : null;
+      const email = p.inboxId !== "demo";
+      return verdict && verdict.verdict !== "CLEAR"
+        ? { prospectId: p._id, from: publicSender(p.from, p.inboxId), email, subject: email ? "(arrived by email)" : p.subject ?? null, verdict: verdict.verdict, reasons: email ? [`${verdict.reasons.length} reasons on file; unlock the record with the staff passphrase`] : verdict.reasons, decidedAt: verdict.decidedAt }
+        : null;
     }));
     return rows.filter((r): r is NonNullable<typeof r> => r !== null).sort((a, b) => a.decidedAt - b.decidedAt);
   },
@@ -108,7 +112,8 @@ export const stats = query({
       entities: entities.length,
       previousNames,
       matters: matters.length,
-      ruleVersion: verdicts[0]?.ruleVersion ?? "cc-rules-v1",
+      ruleVersion: RULE_VERSION,
+      ruleVersionsOnFile: [...new Set(verdicts.map((v) => v.ruleVersion))].sort(),
       latestConflictId: latestConflict?.prospectId ?? null,
       lastDecidedAt: verdicts.length ? Math.max(...verdicts.map((v) => v.decidedAt)) : null,
     };
@@ -128,7 +133,7 @@ export const proofList = query({
         prospectId: p._id,
         senderDomain: p.senderDomain ?? "unknown",
         channel: p.inboxId === "demo" ? "console" : "email",
-        subject: p.subject ?? null,
+        subject: p.inboxId === "demo" ? p.subject ?? null : "(arrived by email)",
         receivedAt: p.receivedAt,
         stage: p.stage,
         verdict: verdict?.verdict ?? null,
