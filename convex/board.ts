@@ -1,6 +1,14 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// Records that arrived by email may belong to a real person. Public surfaces show the sender's
+// domain only; console (demo) records are fictional and shown in full.
+export function publicSender(from: string, inboxId: string): string {
+  if (inboxId === "demo") return from;
+  const domain = from.includes("@") ? from.split("@").pop()!.replace(/>$/, "") : "unknown";
+  return `[sender at ${domain}]`;
+}
+
 // Everything the two boards need, one subscription each. Intake sees every prospect and
 // its stage; the partner queue is the subset the engine refused to clear on its own.
 export const listProspects = query({
@@ -11,7 +19,7 @@ export const listProspects = query({
       const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).first();
       return {
         _id: p._id,
-        from: p.from,
+        from: publicSender(p.from, p.inboxId),
         subject: p.subject,
         receivedAt: p.receivedAt,
         stage: p.stage,
@@ -30,7 +38,7 @@ export const reviewQueue = query({
     const decided = await ctx.db.query("prospects").withIndex("by_stage", (q) => q.eq("stage", "decided")).collect();
     const rows = await Promise.all(decided.map(async (p) => {
       const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", p._id)).first();
-      return verdict && verdict.verdict !== "CLEAR" ? { prospectId: p._id, from: p.from, subject: p.subject, verdict: verdict.verdict, reasons: verdict.reasons, decidedAt: verdict.decidedAt } : null;
+      return verdict && verdict.verdict !== "CLEAR" ? { prospectId: p._id, from: publicSender(p.from, p.inboxId), email: p.inboxId !== "demo", subject: p.subject, verdict: verdict.verdict, reasons: verdict.reasons, decidedAt: verdict.decidedAt } : null;
     }));
     return rows.filter((r): r is NonNullable<typeof r> => r !== null).sort((a, b) => a.decidedAt - b.decidedAt);
   },
@@ -49,14 +57,24 @@ export const matters = query({
 
 // The solicitor's decision is the record of record. The engine's verdict is never
 // overwritten; the review sits beside it with a name, a note and a time.
+// Console records are open so a judge can exercise the review. Email-originated records may
+// concern a real person and need the staff passphrase (STAFF_KEY on the deployment).
 export const review = mutation({
   args: {
     prospectId: v.id("prospects"),
     reviewer: v.string(),
     decision: v.union(v.literal("confirm_hold"), v.literal("decline"), v.literal("proceed_with_consent")),
     note: v.string(),
+    staffKey: v.optional(v.string()),
   },
-  handler: async (ctx, { prospectId, reviewer, decision, note }) => {
+  handler: async (ctx, { prospectId, reviewer, decision, note, staffKey }) => {
+    const prospect = await ctx.db.get(prospectId);
+    if (!prospect) throw new Error("no such prospect");
+    if (prospect.inboxId !== "demo") {
+      const expected = process.env.STAFF_KEY;
+      if (!expected || staffKey !== expected) throw new Error("This record arrived by email. Reviewing it needs the staff passphrase.");
+    }
+    if (!reviewer.trim()) throw new Error("reviewer name required");
     const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).first();
     if (!verdict) throw new Error("no verdict to review");
     await ctx.db.patch(verdict._id, { reviewer, reviewedAt: Date.now(), reviewerNote: `${decision}: ${note}` });

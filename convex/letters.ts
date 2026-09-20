@@ -1,4 +1,5 @@
-import { internalMutation } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { agentmail } from "./email";
 
@@ -7,9 +8,29 @@ const NOTICE = "Conflict Clear is a screening aid. It searches, expands and reco
 
 // Only CLEAR produces an engagement draft. CONFLICT and NEEDS_REVIEW send a hold notice
 // that says nothing about why, because the reason may be a former client's confidence.
-export const sendOutcome = internalMutation({
+// The one model-written paragraph is fetched first; if it fails, the letter goes without it.
+export const sendOutcome = internalAction({
   args: { prospectId: v.id("prospects"), verdictId: v.id("verdicts") },
-  handler: async (ctx, { prospectId, verdictId }) => {
+  handler: async (ctx, { prospectId, verdictId }): Promise<{ ref: string; verdict: string }> => {
+    const verdict = await ctx.runQuery(internal.letters.getVerdict, { verdictId });
+    let paragraph = "";
+    if (verdict?.verdict === "CLEAR") {
+      try {
+        paragraph = await ctx.runAction(internal.extract.draftMatterParagraph, { matterType: verdict.matterType, summary: verdict.summary, verdict: verdict.verdict, parties: verdict.searchedParties });
+      } catch { paragraph = ""; }
+    }
+    return await ctx.runMutation(internal.letters.writeAndSend, { prospectId, verdictId, paragraph });
+  },
+});
+
+export const getVerdict = internalQuery({
+  args: { verdictId: v.id("verdicts") },
+  handler: (ctx, { verdictId }) => ctx.db.get(verdictId),
+});
+
+export const writeAndSend = internalMutation({
+  args: { prospectId: v.id("prospects"), verdictId: v.id("verdicts"), paragraph: v.string() },
+  handler: async (ctx, { prospectId, verdictId, paragraph }): Promise<{ ref: string; verdict: string }> => {
     const prospect = await ctx.db.get(prospectId);
     const verdict = await ctx.db.get(verdictId);
     if (!prospect || !verdict) throw new Error("prospect or verdict missing");
@@ -17,9 +38,10 @@ export const sendOutcome = internalMutation({
     const ref = `CC-${verdictId.slice(-6).toUpperCase()}`;
     const text = verdict.verdict === "CLEAR"
       ? [
-          `Thank you for your instruction. Our intake screen found no conflict of interest that would prevent ${FIRM} acting for you in this matter (${verdict.matterType}).`,
+          `Thank you for your instruction.`,
           ``,
-          `A supervising solicitor will confirm the engagement and send our terms of business. Reference: ${ref}.`,
+          ...(paragraph ? [paragraph, ``] : []),
+          `Our preliminary conflict screen found no match on the firm's records that would stop ${FIRM} from considering this matter (${verdict.matterType}). This is not a confirmation that we can act: a supervising solicitor reviews every screen before any engagement is confirmed, and will send our terms of business if so. Reference: ${ref}.`,
           ``,
           NOTICE,
           ``,

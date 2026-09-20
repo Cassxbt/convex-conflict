@@ -92,3 +92,50 @@ test("NEEDS_REVIEW: genuinely ambiguous name (no primary)", () => {
   assert.equal(d.verdict, "NEEDS_REVIEW");
   assert.ok(d.reasons.some((r) => r.includes("2 registry entities")));
 });
+
+test("NEEDS_REVIEW: a former client extracted on the 'other' side never clears", () => {
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Acme Ltd", side: "prospect", resolution: "resolved", candidates: [ids("99999998", "ACME LTD")] },
+    { id: "p2", rawName: "Royal Mail", side: "other", resolution: "resolved", candidates: [ids("08680755", "INTERNATIONAL DISTRIBUTION SERVICES LIMITED", ["ROYAL MAIL PLC"])] },
+  ];
+  const d = decide(parties, matters);
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.reasons.some((r) => r.includes("other")));
+});
+
+test("NEEDS_REVIEW, not CONFLICT: name matches but company numbers differ", () => {
+  // Current Royal Mail Limited (14240638) vs the history's Royal Mail plc (08680755)
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Royal Mail", side: "adverse", resolution: "resolved", candidates: [ids("14240638", "ROYAL MAIL LIMITED", ["RM 2022 LIMITED"])] },
+  ];
+  const d = decide(parties, matters);
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.hits.every((h) => h.via.includes("different company number")));
+});
+
+test("NEEDS_REVIEW: a company-shaped name in the email that extraction missed", () => {
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Ocado Retail", side: "prospect", resolution: "resolved", candidates: [ids("03875000", "OCADO RETAIL LIMITED")] },
+  ];
+  const d = decide(parties, matters, { unextracted: ["Reed Boardall Cold Storage Limited"] });
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.reasons.some((r) => r.includes("not extracted")));
+});
+
+test("NEEDS_REVIEW: sender site could not be read", () => {
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Ocado Retail", side: "prospect", resolution: "resolved", candidates: [ids("03875000", "OCADO RETAIL LIMITED")] },
+  ];
+  const d = decide(parties, matters, { senderSiteUnavailable: "ocado.invalid" });
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.reasons.some((r) => r.includes("could not be read")));
+});
+
+test("NEEDS_REVIEW: similar names in history that no candidate matched", () => {
+  const parties: ProspectParty[] = [
+    { id: "p1", rawName: "Sandhurst Bakery", side: "adverse", resolution: "unresolved", candidates: [] },
+  ];
+  const d = decide(parties, matters, { similar: [{ prospectPartyId: "p1", matchedName: "Sandhurst Bakeries Ltd", matterRef: "HV-2026-011", role: "client" }] });
+  assert.equal(d.verdict, "NEEDS_REVIEW");
+  assert.ok(d.reasons.some((r) => r.includes("similar")));
+});

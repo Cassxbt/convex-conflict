@@ -20,7 +20,7 @@ export function Home() {
           </div>
           <h1>Keyword search says clear.<br />The register says former client.</h1>
           <p className="lede-lg">
-            A prospect emails the firm. Conflict Clear resolves every party to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Only CLEAR can draft an engagement letter. A solicitor signs off every state.
+            A prospect emails the firm. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter. A solicitor signs off every state.
           </p>
           <div className="cta-row">
             <a className="btn primary inline" href="#/app">Open the console<ArrowRight size={16} strokeWidth={2} aria-hidden /></a>
@@ -28,7 +28,7 @@ export function Home() {
           </div>
           <p className="status-line mono">
             {stats ? <>
-              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 8 tests
+              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 13 tests
             </> : "connecting…"}
           </p>
         </div>
@@ -64,7 +64,7 @@ export function Home() {
         <h2 className="statement">"International Distribution Services Limited" is in no law firm's history. Royal Mail plc is. They are the same company.</h2>
         <div className="split">
           <div>
-            <p>Company 08680755 was <b>Royal Mail plc</b> from 19 September 2013 to 3 October 2022. A keyword conflict search for the name on the prospect's email returns nothing. The firm acted for Royal Mail on a supply-contract dispute in 2019 and still holds its confidential information. SRA Code 6.5 says that means the firm cannot act against it.</p>
+            <p>Company 08680755 was <b>Royal Mail plc</b> from 19 September 2013 to 3 October 2022. A keyword conflict search for the name on the prospect's email returns nothing. The firm acted for Royal Mail on a supply-contract dispute in 2019 and may still hold its confidential information. SRA Code 6.5 says a firm holding material confidential information cannot act against that client's interests unless effective safeguards are in place or informed consent is given. Either way, a solicitor has to look.</p>
             <p>Conflict checking is required on every instruction, and the SRA's own guidance says it normally runs on a database that identifies "previous or current clients and related names and businesses". Most small firms search a name, not a company number.</p>
           </div>
           <figure className="registry-card">
@@ -103,8 +103,8 @@ export function Home() {
           </li>
           <li>
             <h3><Globe size={16} strokeWidth={1.75} aria-hidden />Firecrawl</h3>
-            <p><b>Does:</b> reads the sender's legal or terms page and lifts the registered company number and legal name a brand actually trades under.</p>
-            <p className="counter"><b>Remove it:</b> a register search for "The Whisky Exchange" resolves to The Whisky Exchange Limited (14220596). The trading page says Speciality Drinks Limited (04449145). Wrong entity, wrong history, false CLEAR.</p>
+            <p><b>Does:</b> reads the sender's homepage and terms page and lifts the registered company number and legal name a brand actually trades under. If the site cannot be read, the case is held.</p>
+            <p className="counter"><b>Remove it:</b> a register keyword search for "The Whisky Exchange" returns The Whisky Exchange Limited (14220596) first. The trading page says Speciality Drinks Limited (04449145). Recorded in <span className="mono">scripts/preflight-gate.ts</span>: wrong entity, wrong history.</p>
           </li>
           <li>
             <h3><Landmark size={16} strokeWidth={1.75} aria-hidden />Companies House API</h3>
@@ -113,13 +113,13 @@ export function Home() {
           </li>
           <li>
             <h3><Sparkles size={16} strokeWidth={1.75} aria-hidden />OpenAI</h3>
-            <p><b>Does:</b> exactly two bounded structured-output calls: extract the parties from the email; fill the letter from the verdict object.</p>
-            <p className="counter"><b>Remove it:</b> parties are typed by hand and the letter is a template with blanks. The verdict is unaffected, by design.</p>
+            <p><b>Does:</b> two bounded structured-output calls: list the parties in the email, and write one neutral paragraph for a CLEAR letter from the verdict object. A deterministic scan for company-shaped names checks the first call did not drop anyone.</p>
+            <p className="counter"><b>Remove it:</b> nothing is extracted, so every instruction is held for a human to list the parties. The verdict logic is unaffected, by design.</p>
           </li>
           <li>
             <h3><Database size={16} strokeWidth={1.75} aria-hidden />Convex</h3>
             <p><b>Does:</b> durable intake workflow, the matter history, the verdict record with rule version and timestamp, the partner queue, and the live two-role board. Frontend and webhooks on one deployment.</p>
-            <p className="counter"><b>Remove it:</b> there is no record of who was searched, what was found, and who decided. SRA Code for Firms 2.2 requires exactly that record.</p>
+            <p className="counter"><b>Remove it:</b> there is no record of who was searched, what was found, and who decided. SRA Code for Firms 2.2 requires records that demonstrate compliance; this is the one an intake screen produces.</p>
           </li>
         </ul>
       </section>
@@ -153,12 +153,12 @@ export function Home() {
         <table className="grid honesty">
           <tbody>
             <tr><td>Companies House data</td><td><span className="ok">Real.</span> Live API calls; previous names, status and numbers are the register's.</td></tr>
-            <tr><td>Website evidence</td><td><span className="ok">Real.</span> Firecrawl reads the sender domain's pages on each screen; URL, snippet and time are stored on the record.</td></tr>
+            <tr><td>Website evidence</td><td><span className="ok">Real.</span> Firecrawl reads the sender's homepage and terms page when the sender has a corporate domain; URL, snippet and time are stored on the record. Free-mail and reserved domains are skipped.</td></tr>
             <tr><td>Email round trip</td><td><span className="ok">Real.</span> The case inbox receives through a signed AgentMail webhook and replies on the original thread. Records opened from the console are marked <span className="mono">demo</span>: the letter is recorded, not sent.</td></tr>
             <tr><td>The firm and its matters</td><td><span className="warn">Fictional.</span> Hollin &amp; Vance LLP does not exist. Twelve matters were seeded so the register has something real to hit; the company names and numbers in them are real.</td></tr>
-            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v1</span>, eight tests, no model in the loop.</td></tr>
+            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v2</span>, thirteen tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed or mislabelled party is a known limit, and the scan exists to catch it.</td></tr>
             <tr><td>Legal status</td><td><span className="warn">A screening aid.</span> CLEAR is a recommendation to the supervising solicitor, who remains responsible under SRA Code paragraph 6.</td></tr>
-            <tr><td>Auth</td><td><span className="warn">None.</span> The console is open so a judge can use it. A firm would put it behind its identity provider.</td></tr>
+            <tr><td>Access</td><td><span className="warn">Open, with two guards.</span> The console is open so a judge can use it. Records that arrived by email show the sender as a domain only, and reviewing them needs a staff passphrase; records opened from the console are fictional and fully open. A firm would put all of it behind its identity provider.</td></tr>
           </tbody>
         </table>
       </section>

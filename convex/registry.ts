@@ -1,7 +1,7 @@
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
-import { searchCompanies, getCompany } from "../shared/companiesHouse";
+import { searchCompanies, getCompany, type RegistryEntity } from "../shared/companiesHouse";
 import { normalizeName } from "../shared/engine";
 
 const key = () => {
@@ -34,19 +34,24 @@ export const resolveName = internalAction({
     const wanted = normalizeName(rawName);
     const numbers = new Set<string>();
     if (pinnedCompanyNumber) numbers.add(pinnedCompanyNumber);
-    for (const s of await searchCompanies(apiKey, rawName, 10)) numbers.add(s.companyNumber);
+    for (const s of await searchCompanies(apiKey, rawName, 20)) numbers.add(s.companyNumber);
 
     type Cand = { companyNumber: string; name: string; previousNames: string[]; status: string; source: string; primary: boolean; tier: number };
     const candidates: Cand[] = [];
+    const DAY = 86_400_000;
     for (const n of numbers) {
-      const e = await getCompany(apiKey, n);
-      await ctx.runMutation(internal.registry.cacheEntity, e);
+      // Profiles fetched in the last day are reused; the register allows 600 calls per five minutes.
+      const cached = await ctx.runQuery(internal.registry.getCached, { companyNumber: n });
+      const e: RegistryEntity = cached && Date.now() - cached.fetchedAt < DAY
+        ? { companyNumber: cached.companyNumber, name: cached.name, status: cached.status, previousNames: cached.previousNames }
+        : await getCompany(apiKey, n);
+      if (!cached || Date.now() - cached.fetchedAt >= DAY) await ctx.runMutation(internal.registry.cacheEntity, e);
       const current = normalizeName(e.name) === wanted;
       const previous = e.previousNames.some((p) => normalizeName(p.name) === wanted);
-      const pinned = n === pinnedCompanyNumber;
+      const pinned = n === pinnedCompanyNumber && e.status === "active";
       if (!current && !previous && !pinned) continue;
-      // Tier 0: the sender's own site named this number. 1: active, current exact name.
-      // 2: active, matched only via a previous name. 3: dissolved.
+      // Tier 0: the sender's own site named this active number. 1: active, current exact name.
+      // 2: active, matched only via a previous name. 3: not active.
       const tier = pinned ? 0 : e.status !== "active" ? 3 : current ? 1 : 2;
       candidates.push({ companyNumber: e.companyNumber, name: e.name, previousNames: e.previousNames.map((p) => p.name), status: e.status, source: pinned ? "website" : "registry", primary: false, tier });
     }

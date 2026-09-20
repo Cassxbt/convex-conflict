@@ -18,6 +18,7 @@ export async function searchCompanies(apiKey: string, q: string, size = 10) {
     headers: authHeader(apiKey),
   });
   if (res.status === 404) return [];
+  if (res.status === 429) throw new Error("CH rate limited (600 requests per 5 minutes); retry later");
   if (!res.ok) throw new Error(`CH search ${res.status}: ${await res.text()}`);
   const json = await res.json();
   return (json.items ?? []).map((i: any) => ({
@@ -29,6 +30,7 @@ export async function searchCompanies(apiKey: string, q: string, size = 10) {
 
 export async function getCompany(apiKey: string, companyNumber: string): Promise<RegistryEntity> {
   const res = await fetch(`${BASE}/company/${companyNumber}`, { headers: authHeader(apiKey) });
+  if (res.status === 429) throw new Error("CH rate limited (600 requests per 5 minutes); retry later");
   if (!res.ok) throw new Error(`CH company ${companyNumber} ${res.status}: ${await res.text()}`);
   const j = await res.json();
   return {

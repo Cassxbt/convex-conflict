@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import { publicSender } from "./board";
 
 // Judge path: paste an instruction, watch the same workflow run, read the record. Nothing is
 // emailed; the letter that would have gone out is stored on the verdict.
@@ -29,6 +30,7 @@ export const record = query({
     const parties = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
     const verdict = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).first();
     const matters = verdict ? await Promise.all([...new Set(verdict.hits.map((h) => h.matterId))].map((id) => ctx.db.get(id))) : [];
-    return { prospect, parties, verdict, matters: matters.filter(Boolean) };
+    const shown = prospect.inboxId === "demo" ? prospect : { ...prospect, from: publicSender(prospect.from, prospect.inboxId) };
+    return { prospect: shown, parties, verdict, matters: matters.filter(Boolean) };
   },
 });

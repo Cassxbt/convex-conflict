@@ -1,7 +1,7 @@
 // Deterministic conflict verdict. No model, no I/O. Everything a verdict depends on is in
 // the inputs, so the same inputs always yield the same verdict and hits.
 
-export const RULE_VERSION = "cc-rules-v1";
+export const RULE_VERSION = "cc-rules-v2";
 
 export type Role = "client" | "former_client" | "adverse" | "related";
 export type Verdict = "CLEAR" | "CONFLICT" | "NEEDS_REVIEW";
@@ -35,10 +35,21 @@ export type MatterParty = {
 export type Hit = {
   prospectPartyId: string;
   candidateNumber?: string;
+  weak?: boolean;
   matterId: string;
   matchedName: string;
   matchedRole: Role;
   via: string;
+};
+
+// Signals the workflow gathers outside the party list. Each one alone blocks CLEAR.
+export type Context = {
+  // Company-shaped names found in the email that extraction did not return.
+  unextracted?: string[];
+  // The sender's corporate domain could not be read, so the prospect's entity is unpinned.
+  senderSiteUnavailable?: string;
+  // Full-text hits in the matter history on a raw name that no candidate matched.
+  similar?: { prospectPartyId: string; matchedName: string; matterRef: string; role: Role }[];
 };
 
 export type Decision = {
@@ -79,6 +90,7 @@ function matchesFor(party: ProspectParty, candidate: Candidate, matters: MatterP
   const aliases = namesOf(candidate);
   for (const mp of matters) {
     let via: string | null = null;
+    let weak = false;
     if (mp.companyNumber && mp.companyNumber === candidate.companyNumber) {
       const renamed = normalizeName(mp.name) !== normalizeName(candidate.name);
       via = renamed
@@ -87,17 +99,22 @@ function matchesFor(party: ProspectParty, candidate: Candidate, matters: MatterP
     } else {
       const mpName = normalizeName(mp.name);
       if (mpName && aliases.includes(mpName)) {
-        via = mpName === normalizeName(candidate.name)
-          ? `name ${candidate.name}`
-          : `previous name ${mp.name} of ${candidate.name} (${candidate.companyNumber})`;
+        // A name match between two different registered numbers is a lead, not an identity.
+        const differs = !!mp.companyNumber && mp.companyNumber !== candidate.companyNumber;
+        via = differs
+          ? `name ${mp.name} matches but different company number (${mp.companyNumber} vs ${candidate.companyNumber})`
+          : mpName === normalizeName(candidate.name)
+            ? `name ${candidate.name}`
+            : `previous name ${mp.name} of ${candidate.name} (${candidate.companyNumber})`;
+        if (differs) weak = true;
       }
     }
-    if (via) hits.push({ prospectPartyId: party.id, candidateNumber: candidate.companyNumber, matterId: mp.matterId, matchedName: mp.name, matchedRole: mp.role, via });
+    if (via) hits.push({ prospectPartyId: party.id, candidateNumber: candidate.companyNumber, matterId: mp.matterId, matchedName: mp.name, matchedRole: mp.role, via, weak });
   }
   return hits;
 }
 
-export function decide(parties: ProspectParty[], matters: MatterParty[]): Decision {
+export function decide(parties: ProspectParty[], matters: MatterParty[], context: Context = {}): Decision {
   const reasons: string[] = [];
   const hits: Hit[] = [];
   let needsReview = false;
@@ -105,6 +122,18 @@ export function decide(parties: ProspectParty[], matters: MatterParty[]): Decisi
 
   if (parties.length === 0) {
     return { verdict: "NEEDS_REVIEW", hits, reasons: ["no parties were extracted from the instruction"], ruleVersion: RULE_VERSION };
+  }
+  for (const name of context.unextracted ?? []) {
+    needsReview = true;
+    reasons.push(`"${name}" looks like a party in the email but was not extracted`);
+  }
+  if (context.senderSiteUnavailable) {
+    needsReview = true;
+    reasons.push(`the sender's site ${context.senderSiteUnavailable} could not be read, so the prospect's entity is unpinned`);
+  }
+  for (const sim of context.similar ?? []) {
+    needsReview = true;
+    reasons.push(`history contains a similar name: ${sim.matchedName} (${sim.role.replace("_", " ")} in ${sim.matterRef})`);
   }
 
   for (const p of parties) {
@@ -127,14 +156,22 @@ export function decide(parties: ProspectParty[], matters: MatterParty[]): Decisi
 
     if (p.resolution === "ambiguous") {
       needsReview = true;
-      reasons.push(`"${p.rawName}" matches ${p.candidates.length} registry entities: ${p.candidates.map((c) => `${c.name} (${c.companyNumber})`).join(", ")}`);
+      reasons.push(p.candidates.length === 1
+        ? `"${p.rawName}" matches only ${p.candidates[0].name} (${p.candidates[0].companyNumber}), which is not an active company`
+        : `"${p.rawName}" matches ${p.candidates.length} registry entities: ${p.candidates.map((c) => `${c.name} (${c.companyNumber})`).join(", ")}`);
       continue;
     }
 
     const primaryNumber = p.candidates.find((c) => c.primary)?.companyNumber;
     for (const h of allHits) {
       const viaAlternate = primaryNumber !== undefined && h.candidateNumber !== primaryNumber;
-      if (viaAlternate && conflicts(p.side, h.matchedRole)) {
+      if (p.side === "other" && h.matchedRole !== "related") {
+        needsReview = true;
+        reasons.push(`"${p.rawName}" was extracted as an other party but is ${h.matchedRole.replace("_", " ")} in matter ${matterRef(matters, h.matterId)}; its side must be confirmed`);
+      } else if (h.weak && conflicts(p.side, h.matchedRole)) {
+        needsReview = true;
+        reasons.push(`"${p.rawName}" shares a name with ${h.matchedName} (${h.matchedRole.replace("_", " ")} in matter ${matterRef(matters, h.matterId)}) but the registered numbers differ`);
+      } else if (viaAlternate && conflicts(p.side, h.matchedRole)) {
         needsReview = true;
         reasons.push(`"${p.rawName}" resolved to ${primaryNumber}, but a similarly named entity is ${h.matchedRole.replace("_", " ")} in matter ${matterRef(matters, h.matterId)} via ${h.via}`);
       } else if (conflicts(p.side, h.matchedRole)) {

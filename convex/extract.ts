@@ -51,3 +51,22 @@ export const extractParties = internalAction({
     return { ...parsed, model };
   },
 });
+
+// Second and last model call: one neutral paragraph restating the matter for the letter. It
+// receives the verdict object, never the history, and cannot change the outcome.
+export const draftMatterParagraph = internalAction({
+  args: { matterType: v.string(), summary: v.string(), verdict: v.string(), parties: v.array(v.string()) },
+  handler: async (_ctx, args): Promise<string> => {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const model = process.env.OPENAI_MODEL ?? "gpt-5-mini";
+    const res = await client.chat.completions.create({
+      model,
+      messages: [
+        { role: "system", content: "You write one short paragraph (max 60 words) for a law firm's intake letter, restating what the prospect asked for in neutral third-person terms. Do not give advice, do not assess merits, do not mention conflicts, do not promise anything, do not name any party other than those listed." },
+        { role: "user", content: JSON.stringify(args) },
+      ],
+      response_format: { type: "json_schema", json_schema: { name: "matter_paragraph", strict: true, schema: { type: "object", additionalProperties: false, properties: { paragraph: { type: "string" } }, required: ["paragraph"] } } },
+    });
+    return JSON.parse(res.choices[0].message.content ?? "{}").paragraph ?? "";
+  },
+});
