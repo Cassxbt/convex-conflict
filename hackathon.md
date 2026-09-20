@@ -12,7 +12,7 @@
 - **Auth:** none
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-19T20:48:50Z
+- **Last updated:** 2026-09-20T10:05:00Z
 
 ## Log
 
@@ -27,3 +27,12 @@ The intake workflow: extract, expand, compare, hold or clear. A durable workflow
 
 ### 2026-09-19 - 1c9e539
 Intake board, partner review queue and the record page, live on Convex static hosting with app-owned root routing so the webhook path stays at the root. The board subscribes to every prospect and its stage; the review queue lists what the engine refused to clear and records the solicitor's decision beside the verdict without overwriting it; the record page shows each party, its candidates and previous names, the website evidence with URL and time, the verdict reasons, the matched history and the letter. A demo path runs the identical workflow from pasted text and records the letter instead of sending it. Production deployment seeded and receiving the AgentMail webhook. Convex features: realtime queries, queries, mutations (`src/App.tsx`, `convex/board.ts`, `convex/demo.ts`, `vite.config.ts`).
+
+### 2026-09-20 - 52bd508
+Console redesigned against a locked design system (`design.md`, `src/tokens.css`): cool near-white paper, one cobalt signal, hairline structure, Inter Tight / Inter / JetBrains Mono, and one graphite readout band per page that carries the verdict. Views split into Intake, Partner review, Record and Matter history with shared primitives. Bordered nav with a working command palette (cmdk) that jumps to any view or record and runs the three example screens from the keyboard; lucide icons; one silent-success toast (sonner) when a review is recorded. Motion is limited to realtime inserts, the stage bar and press feedback; keyboard actions do not animate; reduced motion is honoured. Verified live in light and dark and at 390px. Convex features: realtime queries (`src/App.tsx`, `src/views/`, `src/components/`, `src/styles.css`).
+
+### 2026-09-20 - 5efb5fb
+Front page and proof page. The front opens with the failure a keyword search cannot see, reads the live status line and the latest held record from the deployment, and walks through the four-step mechanism, the five systems with what breaks when each is removed, what the model does versus what code does, three doors into the product, and an honesty table. The proof page lists every record by sender domain with evidence flags and a check table whose states include reported-not-verified-here and not-present-here so an unrun check is never mistaken for a pass. Two new queries aggregate live counts; the console moves to `#/app`. Convex features: queries, realtime queries (`convex/board.ts`, `src/views/Home.tsx`, `src/views/Proof.tsx`, `src/lib/route.ts`).
+
+### 2026-09-20 - a9d9e23
+Repository hygiene before publishing: local agent configuration and research notes are ignored and removed from history; the fictional prospect fixture uses a reserved domain; the resolver skips reserved and free-mail domains when reading a sender's site (`.gitignore`, `src/lib/route.ts`, `convex/intake.ts`).
