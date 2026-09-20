@@ -143,6 +143,7 @@ test("NEEDS_REVIEW: similar names in history that no candidate matched", () => {
 test("unextractedNames finds a suffixed company the model dropped, and does not double count", () => {
   const body = "Ocado Retail wants to instruct you against Reed Boardall Cold Storage Limited and Halden Cold Chain Ltd.\n\nLegal team, Ocado Retail Limited";
   assert.deepEqual(unextractedNames(body, ["Ocado Retail", "Reed Boardall Cold Storage Limited"]), ["Halden Cold Chain Ltd"]);
+  assert.deepEqual(unextractedNames("Please sue North Haven Logistics Limited.", ["North Haven Ltd"]), ["North Haven Logistics Limited"]);
   assert.deepEqual(unextractedNames(body, ["Ocado Retail Limited", "Reed Boardall Cold Storage Limited", "Halden Cold Chain Ltd"]), []);
 });
 

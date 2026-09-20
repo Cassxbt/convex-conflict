@@ -111,6 +111,8 @@ export function Record({ id }: { id: Id<"prospects"> }) {
             </dl>
             <ol className="reasons">{verdict.reasons.map((r, i) => <li key={i}>{r}</li>)}</ol>
           </div>
+          {verdict.originalVerdict && verdict.originalVerdict !== verdict.verdict && <p className="reviewed">The engine returned {verdict.originalVerdict.replace("_", " ")}; the case was downgraded for review because a later step failed.</p>}
+          {restricted && verdict.hitCount > 0 && <p className="band-empty">{verdict.hitCount} history match{verdict.hitCount === 1 ? "" : "es"} on file, withheld.</p>}
           {verdict.hits.length > 0 && (
             <table className="grid dark">
               <thead><tr><th>History party</th><th>Role</th><th>Matter</th><th>Via</th></tr></thead>

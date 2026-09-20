@@ -36,13 +36,23 @@ export const record = query({
     const matters = verdict ? await Promise.all([...new Set(verdict.hits.map((h) => h.matterId))].map((id) => ctx.db.get(id))) : [];
     const isEmail = prospect.inboxId !== "demo";
     const unlocked = !isEmail || (!!process.env.STAFF_KEY && staffKey === process.env.STAFF_KEY);
-    if (unlocked) return { access: "full" as const, prospect, parties, verdict, matters: matters.filter(Boolean) };
+    if (unlocked) return { access: "full" as const, prospect, parties, verdict: verdict ? { ...verdict, hitCount: verdict.hits.length } : null, matters: matters.filter(Boolean) };
     return {
       access: "restricted" as const,
       prospect: { ...prospect, from: publicSender(prospect.from, prospect.inboxId), subject: "(arrived by email)", body: "", threadId: "", messageId: "" },
       parties: parties.map((p) => ({ ...p, rawName: p.resolution === "resolved" ? p.rawName : "(withheld)", evidence: [] })),
-      verdict: verdict ? { ...verdict, reasons: [`${verdict.reasons.length} reason${verdict.reasons.length === 1 ? "" : "s"} on file`], summary: "", letterText: undefined, reviewerNote: undefined } : null,
-      matters: matters.filter(Boolean),
+      verdict: verdict ? {
+        ...verdict,
+        reasons: [`${verdict.reasons.length} reason${verdict.reasons.length === 1 ? "" : "s"} on file`],
+        hits: [],
+        hitCount: verdict.hits.length,
+        searchedParties: parties.filter((p) => p.resolution === "resolved").map((p) => p.rawName),
+        matterType: "(withheld)",
+        summary: "",
+        letterText: undefined,
+        reviewerNote: undefined,
+      } : null,
+      matters: [],
     };
   },
 });

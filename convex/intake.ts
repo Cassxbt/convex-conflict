@@ -163,8 +163,15 @@ export const failClosed = internalMutation({
   handler: async (ctx, { prospectId, error }) => {
     const existing = await ctx.db.query("verdicts").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).first();
     if (existing) {
-      // The verdict stands; what failed was after it. Record that on the case and try the notice once more.
-      await ctx.db.patch(existing._id, { reasons: [...existing.reasons, `outcome step failed after the verdict: ${error}`] });
+      // What failed was after the verdict. The engine's answer is preserved as originalVerdict,
+      // but the case is downgraded to NEEDS_REVIEW so it reaches the partner queue, and the
+      // notice is tried once more.
+      await ctx.db.patch(existing._id, {
+        verdict: "NEEDS_REVIEW",
+        originalVerdict: existing.originalVerdict ?? existing.verdict,
+        reasons: [...existing.reasons, `outcome step failed after the verdict: ${error}`],
+      });
+      await ctx.db.patch(prospectId, { stage: "decided" });
       if (!existing.outboundMessageId && !existing.letterText) await ctx.scheduler.runAfter(0, internal.letters.sendOutcome, { prospectId, verdictId: existing._id });
       return;
     }

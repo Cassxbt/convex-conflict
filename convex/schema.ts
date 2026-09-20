@@ -88,6 +88,7 @@ export default defineSchema({
   verdicts: defineTable({
     prospectId: v.id("prospects"),
     verdict,
+    originalVerdict: v.optional(verdict),
     ruleVersion: v.string(),
     hits: v.array(
       v.object({

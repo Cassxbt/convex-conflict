@@ -32,7 +32,7 @@ export function Proof() {
       <header className="panel-head">
         <span className="meta">Proof</span>
         <h1>Read the records. No login needed.</h1>
-        <p className="lede">Every row below is a real record on this deployment. Open one to see the parties, the register candidates, the website evidence, the verdict reasons and the letter.</p>
+        <p className="lede">Every row below is a real record on this deployment. Open a console record to see the parties, the register candidates, the website evidence, the verdict reasons and the letter. A record that arrived by email shows its verdict and registered candidates only, unless unlocked with the staff passphrase.</p>
       </header>
 
       {stats && (
