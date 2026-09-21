@@ -11,7 +11,7 @@
 ![Stack](https://img.shields.io/badge/Convex%20·%20AgentMail%20·%20Firecrawl%20·%20OpenAI-1f1f23)
 ![Register](https://img.shields.io/badge/Companies%20House-live%20API-0b5fff)
 
-### A prospect emails the firm. Each named party is resolved to a registered entity or the case is held; matter history is searched across current and previous names, and only CLEAR can draft a preliminary letter.
+### You run intake at a small firm, or you are the firm. An instruction lands at 9:04 and needs an answer before lunch. Each named party is resolved to a registered entity or the case is held; matter history is searched across current and previous names, and only CLEAR can draft a preliminary letter.
 
 Keyword conflict searches miss the company that changed its name. Company 08680755 was **Royal Mail plc** until 2022 and is **International Distribution Services Limited** today; a firm that acted for Royal Mail still holds its confidences, and a search for the new name returns nothing. Conflict Clear returns CONFLICT via the company number.
 
@@ -41,10 +41,10 @@ Video walkthrough: in production. The final public link will replace this line b
 
 ## Judge it in 90 seconds
 
-1. Open the [live site](https://descriptive-goldfish-956.convex.site). The lead card is the latest held record, read live from the deployment.
+1. Open the [live site](https://descriptive-goldfish-956.convex.site) and press **Run the conflict example** (or open [#/run/conflict](https://descriptive-goldfish-956.convex.site/#/run/conflict)). It files a fictional instruction and opens its record while it resolves against the live register; no mailbox or key needed. The lead card is the latest held record, read live from the deployment.
 2. Open the stable [CONFLICT receipt](https://descriptive-goldfish-956.convex.site/#/record/jh7811bz2kekrs1jh3gqb00sg98etqrd). Company 08680755 links the adverse party's current name to Royal Mail plc in the firm's history; the receipt also shows every other hold reason.
 3. Open the stable [CLEAR receipt](https://descriptive-goldfish-956.convex.site/#/record/jh78w6f3m7366x7d680v6vn0ks8ersdz). Both parties resolved, the only history hit is the prospect itself in a non-conflicting role, and the recorded letter says the screen is preliminary.
-4. Optionally press ⌘K and run **Conflict example** to watch the same workflow live. A live **Clear example** can correctly hold if its website evidence is temporarily unavailable; fail-closed behaviour is deliberate.
+4. Optionally press ⌘K and run the **Clear example**. It can correctly hold if its website evidence is temporarily unavailable; fail-closed behaviour is deliberate.
 5. Try to break the intake with a company that does not exist, "Royal Mail" by name only, or a corporate sender site that cannot be read. Each holds.
 6. Open [/proof](https://descriptive-goldfish-956.convex.site/#/proof), or `curl` the JSON below. Every number is a live query.
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { Toaster } from "sonner";
 import { api } from "../convex/_generated/api";
@@ -25,11 +25,19 @@ export default function App() {
     go(`#/record/${id}`);
   }
 
+  // #/run/<fixture> files the example once, then hands off to the record page.
+  const ran = useRef<string | null>(null);
+  useEffect(() => {
+    if (route.view !== "run" || ran.current === route.key) return;
+    ran.current = route.key;
+    void runFixture(route.key);
+  }, [route]);
+
   return (
     <div className="shell">
       <Nav route={route} queueCount={queue?.length ?? 0} onPalette={() => setPalette(true)} />
       <main id="main" className={route.view === "home" ? "wide" : ""}>
-        {route.view === "home" && <Home />}
+        {(route.view === "home" || route.view === "run") && <Home onRun={runFixture} />}
         {route.view === "proof" && <Proof />}
         {route.view === "intake" && <Intake />}
         {route.view === "review" && <Review />}

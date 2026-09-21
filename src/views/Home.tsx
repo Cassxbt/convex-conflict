@@ -6,7 +6,7 @@ import { Role, Verdict } from "../components/ui";
 
 const REPO = import.meta.env.VITE_REPO_URL as string | undefined;
 
-export function Home() {
+export function Home({ onRun }: { onRun: (key: string) => void }) {
   const stats = useQuery(api.board.stats);
   const latest = useQuery(api.demo.record, stats?.latestConflictId ? { prospectId: stats.latestConflictId } : "skip");
 
@@ -20,12 +20,14 @@ export function Home() {
           </div>
           <h1>Keyword search says clear.<br />The register says former client.</h1>
           <p className="lede-lg">
-            A prospect emails the firm. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter. Every state waits on the partner queue for a recorded decision.
+            You run intake at a small firm, or you are the firm. A new instruction lands at 9:04 on a Monday and someone has to answer it before lunch. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter, and every state waits for a named person to record a decision.
           </p>
           <div className="cta-row">
-            <a className="btn primary inline" href="#/app">Open the console<ArrowRight size={16} strokeWidth={2} aria-hidden /></a>
+            <button type="button" className="btn primary inline" onClick={() => onRun("conflict")}>Run the conflict example<ArrowRight size={16} strokeWidth={2} aria-hidden /></button>
+            <a className="btn outline" href="#/app">Open the console</a>
             <a className="btn outline" href="#/proof">Read the proof</a>
           </div>
+          <p className="fine">The button files a fictional instruction and opens its record while it resolves against the live register. No email is sent.</p>
           <p className="status-line mono">
             {stats ? <>
               live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 16 tests
@@ -142,9 +144,9 @@ export function Home() {
       <section className="section" id="doors">
         <span className="meta">Three doors</span>
         <div className="doors">
-          <a href="#/app" className="door"><span className="meta"><UserRound size={12} strokeWidth={2} aria-hidden />Prospect</span><h3>Email the firm and get a reply that says exactly one of two things.</h3><span className="door-cta">See what they receive<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
-            <a href="#/app" className="door"><span className="meta"><Inbox size={12} strokeWidth={2} aria-hidden />Intake</span><h3>Watch every instruction resolve on a live board, and read the record.</h3><span className="door-cta">Open the console<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
-          <a href="#/review" className="door"><span className="meta"><ShieldCheck size={12} strokeWidth={2} aria-hidden />Partner</span><h3>Review only what the engine refused to clear, with the hop that stopped it.</h3><span className="door-cta">Open the queue<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
+          <a href={latest ? `#/record/${latest.prospect._id}` : "#/app"} className="door"><span className="meta"><UserRound size={12} strokeWidth={2} aria-hidden />You emailed a firm</span><h3>You get a reply that says one of two things, and nothing that tells the other side you asked.</h3><span className="door-cta">See what they receive<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
+          <a href="#/app" className="door"><span className="meta"><Inbox size={12} strokeWidth={2} aria-hidden />You run intake</span><h3>One board instead of three tabs. Every instruction resolves in front of you, and the record says why.</h3><span className="door-cta">Open the console<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
+          <a href="#/review" className="door"><span className="meta"><ShieldCheck size={12} strokeWidth={2} aria-hidden />You sign off</span><h3>Every verdict, with the hop that stopped it. Your decision is recorded beside the engine's, never over it. The clerk and the solicitor can be the same person.</h3><span className="door-cta">Open the queue<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
         </div>
       </section>
 

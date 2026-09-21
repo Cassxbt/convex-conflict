@@ -35,7 +35,7 @@ export function Intake({ initial }: { initial?: string }) {
         <div className="panel-head">
           <h1 id="compose-h">Screen an instruction</h1>
           <p className="lede">Prospects write to the case inbox. Paste an instruction here to run the identical screen without sending anything.</p>
-          <p className="warn-box">Records created here are public and fictional by design. Do not paste real client information. Four screens in a burst, six a minute, 2,000 characters each.</p>
+          <p className="warn-box">Records created here are public and fictional by design. Do not paste real client information. Four screens in a burst, six a minute, 2,000 characters each. A Clear example that holds is not a fault: when the sender's site cannot be read the screen fails closed.</p>
         </div>
         <div className="chips" role="group" aria-label="Examples">
           {FIXTURES.map((f) => (

@@ -7,11 +7,13 @@ export type Route =
   | { view: "intake" }
   | { view: "review" }
   | { view: "matters" }
-  | { view: "record"; id: Id<"prospects"> };
+  | { view: "record"; id: Id<"prospects"> }
+  | { view: "run"; key: FixtureKey };
 
 export function parseRoute(): Route {
   const h = window.location.hash.replace(/^#\/?/, "");
   if (h.startsWith("record/")) return { view: "record", id: h.slice(7) as Id<"prospects"> };
+  if (h.startsWith("run/")) { const key = h.slice(4); if (FIXTURES.some((f) => f.key === key)) return { view: "run", key: key as FixtureKey }; }
   if (h === "review") return { view: "review" };
   if (h === "matters") return { view: "matters" };
   if (h === "proof") return { view: "proof" };
@@ -38,6 +40,8 @@ export const FIXTURES = [
   { key: "conflict", label: "Conflict", from: "legal@universalppe.co.uk", subject: "Cancelled supply contract", body: "We want to instruct you to sue International Distribution Services Limited over a cancelled supply contract.\n\nRegards, Universal PPE Ltd" },
   { key: "review", label: "Needs review", from: "dan.okafor@example.com", subject: "Franchise claim", body: "I am a franchisee and want to bring a claim against Timpson for breach of the franchise agreement.\n\nDan Okafor" },
 ] as const;
+
+export type FixtureKey = (typeof FIXTURES)[number]["key"];
 
 export function fmtTime(ms: number) {
   return new Date(ms).toLocaleString("en-GB", { hour12: false, day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" });
