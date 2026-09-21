@@ -77,7 +77,7 @@ curl -s https://descriptive-goldfish-956.convex.site/api/proof | head -30
 # → {"live": true, "screened": <live count>, "realInbound": <live count>, "byVerdict": {...}, "ruleVersion": "cc-rules-v2", ...}
 
 git clone https://github.com/Cassxbt/convex-conflict && cd convex-conflict && npm install && npm run verify
-# → engine tests: 18 passed · then eight live checks against the deployment, each ok or FAIL
+# → engine tests: 18 passed · then nine live checks against the deployment, each ok or FAIL
 ```
 
 `npm run verify` needs no keys. It fails if the README claims something the live deployment does not hold: no CLEAR, no CONFLICT via a previous-name hop, no email answered, wrong rule set.
@@ -155,7 +155,7 @@ The [proof page](https://descriptive-goldfish-956.convex.site/#/proof) lists eve
 ```bash
 npm install
 npm test                                   # 18 engine tests, node:test, no keys
-npm run verify                             # tests + eight live checks against the deployment, no keys
+npm run verify                             # tests + nine live checks against the deployment, no keys
 npx convex dev                             # creates a dev deployment
 npx convex env set CH_API_KEY … OPENAI_API_KEY … FIRECRAWL_API_KEY … AGENTMAIL_API_KEY … AGENTMAIL_WEBHOOK_SECRET … AGENTMAIL_INBOX_ID … STAFF_KEY …
 npx convex run seed:seedMatters            # the fictional firm

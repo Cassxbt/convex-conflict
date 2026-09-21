@@ -7,6 +7,8 @@
     "test": "node --experimental-strip-types --test test/*.test.ts",
     "deploy": "npx @convex-dev/static-hosting deploy",
     "build": "vite build",
+    "build:prod": "VITE_CONVEX_URL=https://descriptive-goldfish-956.convex.cloud vite build",
+    "publish": "npm run build:prod && npx @convex-dev/static-hosting deploy --skip-build --skip-convex",
     "dev": "vite",
     "verify": "node --experimental-strip-types scripts/verify.ts"
   },
