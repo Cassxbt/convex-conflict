@@ -7,7 +7,7 @@
 - **Repo:** https://github.com/Cassxbt/convex-conflict
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://descriptive-goldfish-956.convex.cloud
-- **Components:** @convex-dev/static-hosting, @convex-dev/workflow, @convex-dev/workpool, @convex-dev/rate-limiter
+- **Components:** @convex-dev/static-hosting, @firecrawl/firecrawl-convex, @agentmail/convex (vendored in `components/agentmail` with an env declaration), @convex-dev/workflow, @convex-dev/workpool, @convex-dev/rate-limiter
 - **Convex features:** schema, tables, indexes, full-text search, queries, mutations, actions, HTTP actions, scheduled functions, realtime queries
 - **Auth:** none
 - **AI models:** gpt-5-mini

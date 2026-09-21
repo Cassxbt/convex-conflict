@@ -25,6 +25,7 @@ const checks: [string, boolean][] = [
   ["a CONFLICT reached via a previous-name hop exists", p.records.some((r: any) => r.verdict === "CONFLICT" && r.previousNameHop)],
   ["a CLEAR with website evidence exists", p.records.some((r: any) => r.verdict === "CLEAR" && r.websiteEvidence)],
   ["an instruction arrived by email and was answered", p.records.some((r: any) => r.channel === "email" && r.sent)],
+  ["a partner decision has been recorded beside an engine verdict", p.reviewed > 0],
 ];
 let bad = 0;
 for (const [label, ok] of checks) { console.log(`${ok ? "ok  " : "FAIL"} ${label}`); if (!ok) bad++; }
