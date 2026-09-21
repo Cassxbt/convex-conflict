@@ -1,5 +1,6 @@
+import { useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
-import { ArrowRight, Globe, Hash, Landmark, Mail, ShieldCheck, Sparkles, Database, Scale, UserRound, Inbox } from "lucide-react";
+import { ArrowRight, ExternalLink, Globe, Hash, Landmark, Mail, ShieldCheck, Sparkles, Database, Scale, UserRound, Inbox } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { fmtTime } from "../lib/route";
 import { Role, Verdict } from "../components/ui";
@@ -8,6 +9,17 @@ const REPO = import.meta.env.VITE_REPO_URL as string | undefined;
 
 export function Home({ onRun }: { onRun: (key: string) => void }) {
   const stats = useQuery(api.board.stats);
+  const systems = useRef<HTMLUListElement>(null);
+  useReveal();
+
+  // The cursor is the light: each card gets its own cursor position so the glow is local.
+  function light(e: React.MouseEvent<HTMLUListElement>) {
+    for (const card of Array.from(systems.current?.children ?? []) as HTMLElement[]) {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      card.style.setProperty("--my", `${e.clientY - r.top}px`);
+    }
+  }
   const latest = useQuery(api.demo.record, stats?.latestConflictId ? { prospectId: stats.latestConflictId } : "skip");
 
   return (
@@ -19,8 +31,9 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
             <span className="badge"><span className="dot live" aria-hidden />convex.site · production</span>
           </div>
           <h1>Keyword search says clear.<br />The register says former client.</h1>
+          <p className="lede-lg lead">You run intake at a small firm, or you are the firm. A new instruction lands at 9:04 on a Monday and someone has to answer it before lunch.</p>
           <p className="lede-lg">
-            You run intake at a small firm, or you are the firm. A new instruction lands at 9:04 on a Monday and someone has to answer it before lunch. Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter, and every state waits for a named person to record a decision.
+            Conflict Clear resolves each party it can identify to a registered entity, using the sender's own website for the names the register cannot see, searches the matter history including previous names, and returns CLEAR, CONFLICT or NEEDS_REVIEW with a written record. Anything it cannot resolve, read, or account for holds the case. Only CLEAR drafts a preliminary letter, and every state waits for a named person to record a decision.
           </p>
           <div className="cta-row">
             <button type="button" className="btn primary inline" onClick={() => onRun("conflict")}>Run the conflict example<ArrowRight size={16} strokeWidth={2} aria-hidden /></button>
@@ -61,7 +74,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </aside>
       </section>
 
-      <section className="section" id="failure">
+      <section className="section reveal" id="failure">
         <span className="meta">The failure</span>
         <h2 className="statement">"International Distribution Services Limited" is in no law firm's history. Royal Mail plc is. They are the same company.</h2>
         <div className="split">
@@ -83,7 +96,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </div>
       </section>
 
-      <section className="section" id="mechanism">
+      <section className="section reveal" id="mechanism">
         <span className="meta">How it works</span>
         <h2 className="statement">Extract. Expand. Compare. Hold or clear.</h2>
         <ol className="steps">
@@ -94,10 +107,10 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </ol>
       </section>
 
-      <section className="section" id="sponsors">
+      <section className="section reveal" id="sponsors">
         <span className="meta">Five systems, one verdict</span>
         <h2 className="statement">Each one does work the others cannot. Remove any of them and the screen breaks in a specific way.</h2>
-        <ul className="systems">
+        <ul className="systems spotlight" ref={systems} onMouseMove={light}>
           <li>
             <h3><Mail size={16} strokeWidth={1.75} aria-hidden />AgentMail</h3>
             <p><b>Does:</b> the prospect's email is the trigger. The signed webhook creates the case; the sender domain seeds entity resolution; the hold notice or engagement draft goes back on the same thread.</p>
@@ -126,7 +139,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </ul>
       </section>
 
-      <section className="section" id="line">
+      <section className="section reveal" id="line">
         <span className="meta">One side of the line</span>
         <h2 className="statement">The model never sees the matter history.</h2>
         <div className="line-grid">
@@ -141,7 +154,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </div>
       </section>
 
-      <section className="section" id="doors">
+      <section className="section reveal" id="doors">
         <span className="meta">Three doors</span>
         <div className="doors">
           <a href={latest ? `#/record/${latest.prospect._id}` : "#/app"} className="door"><span className="meta"><UserRound size={12} strokeWidth={2} aria-hidden />You emailed a firm</span><h3>You get a reply that says one of two things, and nothing that tells the other side you asked.</h3><span className="door-cta">See what they receive<ArrowRight size={14} strokeWidth={2} aria-hidden /></span></a>
@@ -150,7 +163,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </div>
       </section>
 
-      <section className="section" id="real">
+      <section className="section reveal" id="real">
         <span className="meta">What is real, and what is not</span>
         <table className="grid honesty">
           <tbody>
@@ -165,16 +178,32 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
         </table>
       </section>
 
-      <section className="closing band">
+      <section className="closing band reveal">
         <h2 className="statement light">Extract. Expand. Compare. Hold or clear.</h2>
-        <div className="cta-row">
-          <a className="btn primary inline" href="#/app">Open the console<ArrowRight size={16} strokeWidth={2} aria-hidden /></a>
-          <a className="btn ghost" href="#/proof">Read the proof</a>
-          {REPO && <a className="btn ghost" href={REPO} target="_blank" rel="noreferrer">Source</a>}
-        </div>
+        <nav className="closing-links" aria-label="Footer">
+          <a href="#/run/conflict">Run the conflict example</a>
+          <a href="#/app">Console</a>
+          <a href="#/review">Partner queue</a>
+          <a href="#/proof">Proof</a>
+          {REPO && <a href={REPO} target="_blank" rel="noreferrer">Source<ExternalLink size={11} strokeWidth={2} aria-hidden /></a>}
+        </nav>
       </section>
     </div>
   );
 }
 
 
+
+// Sections rise into view once. Elements already in view on load are shown immediately so the
+// first paint never waits on the observer.
+function useReveal() {
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".front .reveal"));
+    if (!("IntersectionObserver" in window)) { els.forEach((el) => el.classList.add("in")); return; }
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+    }, { rootMargin: "0px 0px -10% 0px" });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}

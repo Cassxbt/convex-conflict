@@ -25,6 +25,14 @@ export default function App() {
     go(`#/record/${id}`);
   }
 
+  // Nav anchors are written #/#section so the hash router keeps the home view; scroll here.
+  useEffect(() => {
+    const m = window.location.hash.match(/^#\/#([a-z]+)$/);
+    if (!m) return;
+    const el = document.getElementById(m[1]);
+    if (el) scrollToSection(el);
+  }, [route]);
+
   // #/run/<fixture> files the example once, then hands off to the record page.
   const ran = useRef<string | null>(null);
   useEffect(() => {
@@ -52,4 +60,18 @@ export default function App() {
       <Toaster position="bottom-right" duration={2000} toastOptions={{ className: "toast" }} />
     </div>
   );
+}
+
+// Native smooth scrolling is silently dropped by some browsers, so the eased scroll is our own.
+function scrollToSection(el: HTMLElement) {
+  el.classList.add("in");
+  const target = el.getBoundingClientRect().top + window.scrollY - 84;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { window.scrollTo(0, target); return; }
+  const start = window.scrollY, delta = target - start, t0 = performance.now(), ms = 520;
+  const step = (now: number) => {
+    const p = Math.min(1, (now - t0) / ms);
+    window.scrollTo(0, start + delta * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }

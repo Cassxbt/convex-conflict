@@ -28,8 +28,9 @@
   --color-review-ink: oklch(45% 0.12 75);
   --color-review-tint: oklch(96% 0.05 85);
 
-  --font-display: "Inter Tight", "Inter", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Trial: Geist. Revert by restoring "Inter Tight" / "Inter" on these two lines. */
+  --font-display: "Geist", "Inter Tight", system-ui, sans-serif;
+  --font-body: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --space-3xs: 0.25rem;
