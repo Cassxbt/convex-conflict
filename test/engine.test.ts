@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide, normalizeName, unextractedNames, type MatterParty, type ProspectParty } from "../shared/engine.ts";
+import { decide, distinctiveTokens, normalizeName, unextractedNames, wouldConflict, type MatterParty, type ProspectParty } from "../shared/engine.ts";
 
 const matters: MatterParty[] = [
   { matterId: "m1", matterRef: "HV-2019-001", name: "Royal Mail plc", role: "former_client", companyNumber: "08680755" },
@@ -159,4 +159,20 @@ test("NEEDS_REVIEW: sender site read but no registered number found", () => {
   const d = decide(parties, matters, { senderSiteNoNumber: "ocado.com" });
   assert.equal(d.verdict, "NEEDS_REVIEW");
   assert.ok(d.reasons.some((r) => r.includes("names no registered company number")));
+});
+
+test("distinctiveTokens drops suffixes, stop words and short tokens", () => {
+  assert.deepEqual(distinctiveTokens("Sandhurst Bakeries Ltd"), ["SANDHURST", "BAKERIES"]);
+  assert.deepEqual(distinctiveTokens("International Distribution Services Limited"), ["DISTRIBUTION"]);
+  assert.deepEqual(distinctiveTokens("The UK Group Holdings PLC"), []);
+  assert.deepEqual(distinctiveTokens("J. Smith & Co"), ["SMITH"]);
+});
+
+test("wouldConflict surfaces leads by side and role", () => {
+  assert.equal(wouldConflict("prospect", "adverse"), true);
+  assert.equal(wouldConflict("prospect", "client"), false);
+  assert.equal(wouldConflict("adverse", "former_client"), true);
+  assert.equal(wouldConflict("adverse", "adverse"), false);
+  assert.equal(wouldConflict("other", "client"), true);
+  assert.equal(wouldConflict("other", "related"), false);
 });

@@ -74,6 +74,21 @@ export function normalizeName(name: string): string {
     .trim();
 }
 
+// Tokens worth searching the history for. Generic words match everything and would turn
+// every "Limited" into a lead.
+const STOP = new Set(["AND", "THE", "OF", "GROUP", "HOLDINGS", "SERVICES", "INTERNATIONAL", "UK", "COMPANY", "TRADING", "SOLUTIONS", "LIMITED", "LTD", "PLC", "LLP"]);
+export function distinctiveTokens(name: string): string[] {
+  return normalizeName(name).split(" ").filter((t) => t.length >= 4 && !STOP.has(t));
+}
+
+// Looser than `conflicts`: a near-namesake is a lead for review, not a verdict, so an
+// "other" party matching anything but a related entity is worth surfacing.
+export function wouldConflict(side: ProspectParty["side"], role: string): boolean {
+  if (side === "prospect") return role === "adverse";
+  if (side === "adverse") return role === "client" || role === "former_client";
+  return role !== "related";
+}
+
 function namesOf(c: Candidate): string[] {
   return [c.name, ...c.previousNames].map(normalizeName).filter(Boolean);
 }

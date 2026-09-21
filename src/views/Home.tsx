@@ -30,7 +30,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
           <p className="fine">The button files a fictional instruction and opens its record while it resolves against the live register. No email is sent.</p>
           <p className="status-line mono">
             {stats ? <>
-              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 16 tests
+              live · {stats.screened} instruction{stats.screened === 1 ? "" : "s"} screened · {stats.byVerdict.CONFLICT} held as conflict · {stats.byVerdict.NEEDS_REVIEW} for review · {stats.previousNames} previous names expanded · engine {stats.ruleVersion} · 18 tests
             </> : "connecting…"}
           </p>
         </div>
@@ -158,7 +158,7 @@ export function Home({ onRun }: { onRun: (key: string) => void }) {
             <tr><td>Website evidence</td><td><span className="ok">Real.</span> Firecrawl reads the sender's homepage and terms page when the sender has a corporate domain; URL, snippet and time are stored on the record. Free-mail and reserved domains are skipped.</td></tr>
             <tr><td>Email round trip</td><td><span className="ok">Real.</span> The case inbox receives through a signed AgentMail webhook and replies on the original thread. Records opened from the console are marked <span className="mono">demo</span>: the letter is recorded, not sent.</td></tr>
             <tr><td>The firm and its matters</td><td><span className="warn">Fictional.</span> Hollin &amp; Vance LLP does not exist. Twelve matters were seeded so the register has something real to hit; the company names and numbers in them are real.</td></tr>
-            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v2</span>, sixteen tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed or mislabelled party is a known limit, and the scan exists to catch it.</td></tr>
+            <tr><td>The verdict</td><td><span className="ok">Deterministic.</span> Rule set <span className="mono">cc-rules-v2</span>, eighteen tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed or mislabelled party is a known limit, and the scan exists to catch it.</td></tr>
             <tr><td>Legal status</td><td><span className="warn">A screening aid.</span> CLEAR is a recommendation; the preliminary letter says so, and the case sits on the partner queue until a named person confirms or holds it. The supervising solicitor remains responsible under SRA Code paragraph 6.</td></tr>
             <tr><td>Access</td><td><span className="warn">Open, with guards.</span> The console is open so a judge can use it: rate-limited, size-limited, and marked public. Records that arrived by email show sender domain, verdict and registered candidates only; the message, names, reasons, matter type and letter are withheld and reviewing them needs the staff passphrase. Records opened from the console are fictional and fully open. A firm would put all of it behind its identity provider.</td></tr>
           </tbody>

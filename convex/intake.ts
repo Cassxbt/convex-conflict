@@ -3,21 +3,11 @@ import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
 import { internalMutation, internalQuery } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { decide, normalizeName, RULE_VERSION, unextractedNames, type Context, type MatterParty, type ProspectParty } from "../shared/engine";
+import { decide, distinctiveTokens, normalizeName, RULE_VERSION, unextractedNames, wouldConflict, type Context, type MatterParty, type ProspectParty } from "../shared/engine";
 
 export const workflow = new WorkflowManager(components.workflow);
 
 const FREE_MAIL = new Set(["example.com", "example.org", "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "proton.me", "protonmail.com", "live.com", "aol.com"]);
-
-const STOP = new Set(["AND", "THE", "OF", "GROUP", "HOLDINGS", "SERVICES", "INTERNATIONAL", "UK", "COMPANY", "TRADING", "SOLUTIONS", "LIMITED", "LTD", "PLC", "LLP"]);
-function distinctiveTokens(name: string): string[] {
-  return normalizeName(name).split(" ").filter((t) => t.length >= 4 && !STOP.has(t));
-}
-function wouldConflict(side: "prospect" | "adverse" | "other", role: string): boolean {
-  if (side === "prospect") return role === "adverse";
-  if (side === "adverse") return role === "client" || role === "former_client";
-  return role !== "related";
-}
 
 // EXTRACT -> EXPAND -> COMPARE -> HOLD / CLEAR. Every step is a Convex function so the run
 // survives restarts and every intermediate result is a row a judge can open. Any failure

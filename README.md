@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/Cassxbt/convex-conflict/actions/workflows/ci.yml/badge.svg)](https://github.com/Cassxbt/convex-conflict/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/engine%20tests-16%20passing-10b981)
+![Tests](https://img.shields.io/badge/engine%20tests-18%20passing-10b981)
 ![Live](https://img.shields.io/badge/live-descriptive--goldfish--956.convex.site-1f4d3a)
 ![Stack](https://img.shields.io/badge/Convex%20·%20AgentMail%20·%20Firecrawl%20·%20OpenAI-1f1f23)
 ![Register](https://img.shields.io/badge/Companies%20House-live%20API-0b5fff)
@@ -76,7 +76,7 @@ curl -s https://descriptive-goldfish-956.convex.site/api/proof | head -30
 # → {"live": true, "screened": <live count>, "realInbound": <live count>, "byVerdict": {...}, "ruleVersion": "cc-rules-v2", ...}
 
 git clone https://github.com/Cassxbt/convex-conflict && cd convex-conflict && npm install && npm run verify
-# → engine tests: 16 passed · then eight live checks against the deployment, each ok or FAIL
+# → engine tests: 18 passed · then eight live checks against the deployment, each ok or FAIL
 ```
 
 `npm run verify` needs no keys. It fails if the README claims something the live deployment does not hold: no CLEAR, no CONFLICT via a previous-name hop, no email answered, wrong rule set.
@@ -143,7 +143,7 @@ The [proof page](https://descriptive-goldfish-956.convex.site/#/proof) lists eve
 | Website evidence | **Real.** Firecrawl reads the sender's homepage and terms page when the sender has a corporate domain; URL, snippet and time are on the record. Free-mail and reserved domains are skipped. |
 | Email round trip | **Real.** Signed AgentMail webhook in; replies are handed to AgentMail on the original thread, and delivery state is read from the component's outbound table. Console records are marked `demo`: the letter is recorded, not sent. |
 | The firm and its matters | **Fictional.** Hollin & Vance LLP does not exist. Twelve seeded matters; the company names and numbers in them are real. |
-| The verdict | **Deterministic.** `cc-rules-v2`, 16 tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed person or trading name is a known limit. |
+| The verdict | **Deterministic.** `cc-rules-v2`, 18 tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed person or trading name is a known limit. |
 | Sign-off | **Recorded, not enforced by identity.** Every verdict waits on the partner queue; a named reviewer records a decision. CLEAR's letter goes out first and says it is preliminary. |
 | Access | **Open, with guards.** Console rate-limited (burst 4, 6/min, 60/h), bodies capped, records public and fictional. Email-originated records are restricted without `STAFF_KEY`. A firm would put all of it behind its identity provider. |
 | Auth | **None.** Convex Auth v2 is alpha; the rules make auth optional. |
@@ -153,7 +153,7 @@ The [proof page](https://descriptive-goldfish-956.convex.site/#/proof) lists eve
 
 ```bash
 npm install
-npm test                                   # 16 engine tests, node:test, no keys
+npm test                                   # 18 engine tests, node:test, no keys
 npm run verify                             # tests + eight live checks against the deployment, no keys
 npx convex dev                             # creates a dev deployment
 npx convex env set CH_API_KEY … OPENAI_API_KEY … FIRECRAWL_API_KEY … AGENTMAIL_API_KEY … AGENTMAIL_WEBHOOK_SECRET … AGENTMAIL_INBOX_ID … STAFF_KEY …
