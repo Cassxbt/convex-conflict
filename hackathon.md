@@ -12,7 +12,7 @@
 - **Auth:** none
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-20T17:05:00Z
+- **Last updated:** 2026-09-21T07:15:00Z
 
 ## Log
 
@@ -51,3 +51,6 @@ Fifth pass on review findings. The public intake list no longer returns the matt
 
 ### 2026-09-20 - 9b0e3e5
 Judge path. `GET /api/proof` on the live host returns the same live numbers as the proof page as JSON, so a judge can `curl` the deployment; `npm run verify` runs the 16 engine tests and seven live checks against that endpoint with no keys, and fails if the README claims what the deployment does not hold. README rewritten as a 90-second judge packet: cover and verdict screenshots from the live console, badges with the real test count, the failure before the product, a numbered mechanism, the verification command above the architecture, a sponsor table with what breaks when each is removed, a mermaid diagram with trust boundaries, a success-and-refusal table linking eight live records, and the honesty table. Convex features: HTTP actions (`convex/http.ts`, `scripts/verify.ts`, `README.md`, `assets/`).
+
+### 2026-09-21 - submission audit
+Final judge-path audit before the video edit. The README now sends judges to stable CLEAR and CONFLICT receipts instead of assuming a fresh Firecrawl-dependent CLEAR run will succeed; it explains that a rerun may correctly hold when website evidence is unavailable. The CLEAR description now names its one non-conflicting prospect-side history hit, volatile proof counts are no longer frozen in example output, the email claim distinguishes a handoff to AgentMail from delivery, the repository license metadata matches the MIT license, and CI runs the engine suite and production build (`README.md`, `package.json`, `.github/workflows/ci.yml`).

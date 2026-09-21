@@ -5,12 +5,13 @@
 &nbsp;
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/Cassxbt/convex-conflict/actions/workflows/ci.yml/badge.svg)](https://github.com/Cassxbt/convex-conflict/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/engine%20tests-16%20passing-10b981)
 ![Live](https://img.shields.io/badge/live-descriptive--goldfish--956.convex.site-1f4d3a)
 ![Stack](https://img.shields.io/badge/Convex%20·%20AgentMail%20·%20Firecrawl%20·%20OpenAI-1f1f23)
 ![Register](https://img.shields.io/badge/Companies%20House-live%20API-0b5fff)
 
-### A prospect emails the firm. Every party is resolved to a registered entity, the matter history is searched including previous names, and only CLEAR can draft a letter.
+### A prospect emails the firm. Each named party is resolved to a registered entity or the case is held; matter history is searched across current and previous names, and only CLEAR can draft a preliminary letter.
 
 Keyword conflict searches miss the company that changed its name. Company 08680755 was **Royal Mail plc** until 2022 and is **International Distribution Services Limited** today; a firm that acted for Royal Mail still holds its confidences, and a search for the new name returns nothing. Conflict Clear returns CONFLICT via the company number.
 
@@ -22,9 +23,9 @@ Keyword conflict searches miss the company that changed its name. Company 086807
 
 <img src="assets/verdict.jpg" alt="The verdict readout on a CONFLICT record" width="100%" />
 
-Every frame is the live console driving the live deployment. An instruction from "Universal PPE Ltd" asks the firm to sue "International Distribution Services Limited". The register resolves the target to 08680755 and lists its previous names; the engine matches the company number against the firm's history, finds it recorded as Royal Mail plc, a former client, and holds the case. The prospect gets a hold notice that gives no reason. The partner gets the hop.
+Every product shot in the submission video comes from the live deployment. An instruction from "Universal PPE Ltd" asks the firm to sue "International Distribution Services Limited". The register resolves the target to 08680755 and lists its previous names; the engine matches the company number against the firm's history, finds it recorded as Royal Mail plc, a former client, and holds the case. The console records a prospect-facing hold notice with no confidential reason, and the partner receives the full receipt.
 
-Video walkthrough: recorded for submission and linked from [hackathon.md](hackathon.md) once uploaded.
+Video walkthrough: in production. The final public link will replace this line before submission.
 
 ## Contents
 
@@ -40,11 +41,12 @@ Video walkthrough: recorded for submission and linked from [hackathon.md](hackat
 
 ## Judge it in 90 seconds
 
-1. Open the [live site](https://descriptive-goldfish-956.convex.site). The hero card is the latest held record, read live from the deployment.
-2. Press ⌘K (or the search button) and run **Conflict example**. Watch the record fill in as the workflow runs: parties, register candidates with previous names, the verdict with numbered reasons, the hold notice.
-3. Run **Clear example**. The letter says it is preliminary and carries one model-written paragraph.
-4. Try to break it from the intake form: a company that does not exist, "Royal Mail" by name only, a sender whose site cannot be read. Each holds.
-5. Open [/proof](https://descriptive-goldfish-956.convex.site/#/proof), or `curl` the JSON below. Every number is a live query.
+1. Open the [live site](https://descriptive-goldfish-956.convex.site). The lead card is the latest held record, read live from the deployment.
+2. Open the stable [CONFLICT receipt](https://descriptive-goldfish-956.convex.site/#/record/jh7811bz2kekrs1jh3gqb00sg98etqrd). Company 08680755 links the adverse party's current name to Royal Mail plc in the firm's history; the receipt also shows every other hold reason.
+3. Open the stable [CLEAR receipt](https://descriptive-goldfish-956.convex.site/#/record/jh78w6f3m7366x7d680v6vn0ks8ersdz). Both parties resolved, the only history hit is the prospect itself in a non-conflicting role, and the recorded letter says the screen is preliminary.
+4. Optionally press ⌘K and run **Conflict example** to watch the same workflow live. A live **Clear example** can correctly hold if its website evidence is temporarily unavailable; fail-closed behaviour is deliberate.
+5. Try to break the intake with a company that does not exist, "Royal Mail" by name only, or a corporate sender site that cannot be read. Each holds.
+6. Open [/proof](https://descriptive-goldfish-956.convex.site/#/proof), or `curl` the JSON below. Every number is a live query.
 
 ## The problem
 
@@ -71,7 +73,7 @@ Verdict vocabulary a judge can tick: `CLEAR` · `CONFLICT` · `NEEDS_REVIEW`, ru
 
 ```bash
 curl -s https://descriptive-goldfish-956.convex.site/api/proof | head -30
-# → {"live": true, "screened": 10, "realInbound": 3, "byVerdict": {...}, "previousNames": 122, "ruleVersion": "cc-rules-v2", ...}
+# → {"live": true, "screened": <live count>, "realInbound": <live count>, "byVerdict": {...}, "ruleVersion": "cc-rules-v2", ...}
 
 git clone https://github.com/Cassxbt/convex-conflict && cd convex-conflict && npm install && npm run verify
 # → engine tests: 16 passed · then seven live checks against the deployment, each ok or FAIL
@@ -122,7 +124,7 @@ Trust boundaries: the model sees the email and the verdict object, never the his
 
 | Case | Verdict | Why | Record |
 |---|---|---|---|
-| Ocado Retail v Reed Boardall Cold Storage | CLEAR | Ocado pinned from ocado.com ("trading name of Ocado Retail Limited", 03875000); Reed Boardall 00995076 resolved; no conflicting history | [open](https://descriptive-goldfish-956.convex.site/#/record/jh78w6f3m7366x7d680v6vn0ks8ersdz) |
+| Ocado Retail v Reed Boardall Cold Storage | CLEAR | Ocado pinned from ocado.com (03875000); Reed Boardall 00995076 resolved; the only history hit is Ocado itself as a former client on the prospect side, not an adverse-side client conflict | [open](https://descriptive-goldfish-956.convex.site/#/record/jh78w6f3m7366x7d680v6vn0ks8ersdz) |
 | Universal PPE v International Distribution Services | CONFLICT | 08680755 recorded as Royal Mail plc, former client; prospect was the adverse party in the same matter | [open](https://descriptive-goldfish-956.convex.site/#/record/jh7fgsa623j9hmydtn39h9e7wn8esw82) |
 | Franchisee v "Timpson" | NEEDS_REVIEW | resolves to Timpson Ltd 00675216, but Timpson Group (02339274) is a former client | [open](https://descriptive-goldfish-956.convex.site/#/record/jh7ap1jehtgb8791xj2780bkws8eryv4) |
 | "Royal Mail" by name only | NEEDS_REVIEW | resolves to the current Royal Mail Limited 14240638; the former client is 08680755, different number | [open](https://descriptive-goldfish-956.convex.site/#/record/jh773hnttt6fne3fa8vrbq90b18esxa3) |
@@ -139,7 +141,7 @@ The [proof page](https://descriptive-goldfish-956.convex.site/#/proof) lists eve
 |---|---|
 | Companies House data | **Real.** Live API; previous names, status and numbers are the register's. Profiles cached 24h. |
 | Website evidence | **Real.** Firecrawl reads the sender's homepage and terms page when the sender has a corporate domain; URL, snippet and time are on the record. Free-mail and reserved domains are skipped. |
-| Email round trip | **Real.** Signed AgentMail webhook in, reply on the original thread out. Delivery state is read from the component's outbound table. Console records are marked `demo`: the letter is recorded, not sent. |
+| Email round trip | **Real.** Signed AgentMail webhook in; replies are handed to AgentMail on the original thread, and delivery state is read from the component's outbound table. Console records are marked `demo`: the letter is recorded, not sent. |
 | The firm and its matters | **Fictional.** Hollin & Vance LLP does not exist. Twelve seeded matters; the company names and numbers in them are real. |
 | The verdict | **Deterministic.** `cc-rules-v2`, 16 tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed person or trading name is a known limit. |
 | Sign-off | **Recorded, not enforced by identity.** Every verdict waits on the partner queue; a named reviewer records a decision. CLEAR's letter goes out first and says it is preliminary. |
