@@ -108,6 +108,8 @@ export default defineSchema({
     reviewedAt: v.optional(v.number()),
     reviewerNote: v.optional(v.string()),
     outboundMessageId: v.optional(v.string()),
+    rescreenedAt: v.optional(v.number()),
+    rescreenNote: v.optional(v.string()),
     letterText: v.optional(v.string()),
   }).index("by_prospect", ["prospectId"]),
 });

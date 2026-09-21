@@ -108,10 +108,12 @@ export function Record({ id }: { id: Id<"prospects"> }) {
               <div><dt>searched</dt><dd>{verdict.searchedParties.join(" · ")}</dd></div>
               <div><dt>matter type</dt><dd>{verdict.matterType}</dd></div>
               {verdict.outboundMessageId && <div><dt>sent</dt><dd className="mono">{verdict.outboundMessageId}</dd></div>}
+              {verdict.rescreenedAt && <div><dt>re-screened</dt><dd className="mono">{fmtTime(verdict.rescreenedAt)}</dd></div>}
             </dl>
             <ol className="reasons">{verdict.reasons.map((r, i) => <li key={i}>{r}</li>)}</ol>
           </div>
-          {verdict.originalVerdict && verdict.originalVerdict !== verdict.verdict && <p className="reviewed">The engine returned {verdict.originalVerdict.replace("_", " ")}; the case was downgraded for review because a later step failed.</p>}
+          {verdict.rescreenNote && <p className="reviewed">{verdict.rescreenNote}</p>}
+          {verdict.originalVerdict && verdict.originalVerdict !== verdict.verdict && !verdict.rescreenNote && <p className="reviewed">The engine returned {verdict.originalVerdict.replace("_", " ")}; the case was downgraded for review because a later step failed.</p>}
           {restricted && verdict.hitCount > 0 && <p className="band-empty">{verdict.hitCount} history match{verdict.hitCount === 1 ? "" : "es"} on file, withheld.</p>}
           {verdict.hits.length > 0 && (
             <table className="grid dark">

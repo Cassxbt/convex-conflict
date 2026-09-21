@@ -1,7 +1,7 @@
 import { WorkflowManager, type WorkflowCtx } from "@convex-dev/workflow";
 import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
-import { internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { decide, distinctiveTokens, normalizeName, RULE_VERSION, unextractedNames, wouldConflict, type Context, type MatterParty, type ProspectParty } from "../shared/engine";
 
@@ -101,40 +101,46 @@ export const recordParty = internalMutation({
 
 // The verdict is computed inside one mutation over the firm's current history, so the
 // record and the state it was decided against are consistent.
+// The compare step on its own, so a later re-screen against a changed matter history runs
+// the identical code as the original verdict.
+export async function screen(ctx: MutationCtx, prospectId: Id<"prospects">, context: Omit<Context, "similar">) {
+  const partiesDocs = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
+  const parties: ProspectParty[] = partiesDocs.map((p) => ({
+    id: p._id, rawName: p.rawName, side: p.side, resolution: p.resolution,
+    candidates: p.candidates.map((c) => ({ companyNumber: c.companyNumber, name: c.name, previousNames: c.previousNames, source: c.source, primary: c.primary })),
+  }));
+
+  const matters = await ctx.db.query("matters").collect();
+  const refs = new Map(matters.map((m) => [m._id, m.ref]));
+  const matterParties: MatterParty[] = (await ctx.db.query("matterParties").collect()).map((mp) => ({
+    matterId: mp.matterId, matterRef: refs.get(mp.matterId) ?? mp.matterId, name: mp.name, role: mp.role, companyNumber: mp.companyNumber,
+  }));
+
+  // Full-text search over history party names surfaces near-misses no candidate matched.
+  // A hit counts only when it shares a distinctive word with the raw name and its role would
+  // conflict with the party's side; "Limited" in common is not a lead.
+  const similar: Context["similar"] = [];
+  for (const p of parties) {
+    const core = distinctiveTokens(p.rawName);
+    if (core.length === 0) continue;
+    const found = await ctx.db.query("matterParties").withSearchIndex("search_name", (q) => q.search("name", core.join(" "))).take(5);
+    for (const mp of found) {
+      if (!wouldConflict(p.side, mp.role)) continue;
+      const shared = distinctiveTokens(mp.name).some((t) => core.includes(t));
+      if (!shared) continue;
+      const already = parties.some((pp) => pp.candidates.some((c) => c.companyNumber && c.companyNumber === mp.companyNumber))
+        || normalizeName(mp.name) === normalizeName(p.rawName)
+        || parties.some((pp) => pp.candidates.some((c) => [c.name, ...c.previousNames].map(normalizeName).includes(normalizeName(mp.name))));
+      if (!already) similar.push({ prospectPartyId: p.id, matchedName: mp.name, matterRef: refs.get(mp.matterId) ?? mp.matterId, role: mp.role });
+    }
+  }
+  return { ...decide(parties, matterParties, { ...context, similar }), searchedParties: parties.map((p) => p.rawName) };
+}
+
 export const decideAndRecord = internalMutation({
   args: { prospectId: v.id("prospects"), matterType: v.string(), summary: v.string(), unextracted: v.optional(v.array(v.string())), senderSiteUnavailable: v.optional(v.string()), senderSiteNoNumber: v.optional(v.string()) },
   handler: async (ctx, { prospectId, matterType, summary, unextracted, senderSiteUnavailable, senderSiteNoNumber }) => {
-    const partiesDocs = await ctx.db.query("prospectParties").withIndex("by_prospect", (q) => q.eq("prospectId", prospectId)).collect();
-    const parties: ProspectParty[] = partiesDocs.map((p) => ({
-      id: p._id, rawName: p.rawName, side: p.side, resolution: p.resolution,
-      candidates: p.candidates.map((c) => ({ companyNumber: c.companyNumber, name: c.name, previousNames: c.previousNames, source: c.source, primary: c.primary })),
-    }));
-
-    const matters = await ctx.db.query("matters").collect();
-    const refs = new Map(matters.map((m) => [m._id, m.ref]));
-    const matterParties: MatterParty[] = (await ctx.db.query("matterParties").collect()).map((mp) => ({
-      matterId: mp.matterId, matterRef: refs.get(mp.matterId) ?? mp.matterId, name: mp.name, role: mp.role, companyNumber: mp.companyNumber,
-    }));
-
-    // Full-text search over history party names surfaces near-misses no candidate matched.
-    // A hit counts only when it shares a distinctive word with the raw name and its role would
-    // conflict with the party's side; "Limited" in common is not a lead.
-    const similar: Context["similar"] = [];
-    for (const p of parties) {
-      const core = distinctiveTokens(p.rawName);
-      if (core.length === 0) continue;
-      const found = await ctx.db.query("matterParties").withSearchIndex("search_name", (q) => q.search("name", core.join(" "))).take(5);
-      for (const mp of found) {
-        if (!wouldConflict(p.side, mp.role)) continue;
-        const shared = distinctiveTokens(mp.name).some((t) => core.includes(t));
-        if (!shared) continue;
-        const already = parties.some((pp) => pp.candidates.some((c) => c.companyNumber && c.companyNumber === mp.companyNumber))
-          || normalizeName(mp.name) === normalizeName(p.rawName)
-          || parties.some((pp) => pp.candidates.some((c) => [c.name, ...c.previousNames].map(normalizeName).includes(normalizeName(mp.name))));
-        if (!already) similar.push({ prospectPartyId: p.id, matchedName: mp.name, matterRef: refs.get(mp.matterId) ?? mp.matterId, role: mp.role });
-      }
-    }
-    const d = decide(parties, matterParties, { unextracted, senderSiteUnavailable, senderSiteNoNumber, similar });
+    const d = await screen(ctx, prospectId, { unextracted, senderSiteUnavailable, senderSiteNoNumber });
     const verdictId = await ctx.db.insert("verdicts", {
       prospectId,
       verdict: d.verdict,
@@ -143,7 +149,7 @@ export const decideAndRecord = internalMutation({
       reasons: d.reasons,
       matterType,
       summary,
-      searchedParties: parties.map((p) => p.rawName),
+      searchedParties: d.searchedParties,
       decidedAt: Date.now(),
     });
     await ctx.db.patch(prospectId, { stage: "decided" });

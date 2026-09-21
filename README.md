@@ -66,6 +66,7 @@ Three specific ways a keyword search fails, each reproduced on the live deployme
 2. **Expand.** Each name is searched on Companies House; every candidate's current and previous names are fetched. Firecrawl reads the sender's own homepage and terms page and pins the brand to the registered number it actually trades under.
 3. **Compare.** `shared/engine.ts` matches every alias against the firm's matter parties by company number and normalised name. A prospect who was once adverse, or an opponent who was once a client, is a conflict. A name match across different registered numbers is a lead, not an identity. Ambiguity, an unresolved name, an unreadable sender site, or a site with no registered number all hold the case.
 4. **Hold or clear.** CLEAR drafts a preliminary letter into the thread. CONFLICT and NEEDS_REVIEW send a hold notice that gives no reason. Every state lands on the partner queue for a recorded decision; the engine's verdict is never overwritten.
+5. **Re-screen.** A screen is only as current as the history it ran against. A nightly cron re-runs the compare step for every record no solicitor has decided yet, through a workpool so it never competes with live intake. A record only moves towards a hold, new matches are appended beside the original ones, and a decided record is never touched.
 
 Verdict vocabulary a judge can tick: `CLEAR` · `CONFLICT` · `NEEDS_REVIEW`, rule set `cc-rules-v2`.
 
@@ -93,7 +94,7 @@ Or send a real email to the case inbox named on the [live site](https://descript
 | **Firecrawl** | `FirecrawlClient.scrape` on the sender's homepage and terms page lifts the registered company number and legal name. `convex/resolve.ts`. | "The Whisky Exchange" resolves to 14220596 instead of 04449145. Wrong history, false CLEAR. `scripts/preflight-gate.ts` runs this differential against the deployed action. |
 | **Companies House API** | Search, profiles, previous names, status. `shared/companiesHouse.ts`. Not a sponsor; the register has an API, so nothing is scraped from it. | The Royal Mail hop is never made. |
 | **OpenAI** | Two bounded structured-output calls: party extraction (`convex/extract.ts`) and one neutral paragraph for CLEAR letters. | Nothing is extracted, so every case holds for a human to list the parties. The verdict logic is untouched. |
-| **Convex** | Durable workflow (`@convex-dev/workflow`), matter history with a full-text index, verdict record with rule version and timestamp, partner queue, live two-role board, static hosting, webhooks, rate limiting. Six components registered. | No record of who was searched, what was found, and who decided. |
+| **Convex** | Durable workflow (`@convex-dev/workflow`), nightly re-screen cron through a workpool, matter history with a full-text index, verdict record with rule version and timestamp, partner queue, live two-role board, static hosting, webhooks, rate limiting. Six components registered. | No record of who was searched, what was found, and who decided. |
 
 ## Architecture
 
@@ -165,7 +166,7 @@ node --experimental-strip-types scripts/preflight-gate.ts   # the Firecrawl diff
 Register the AgentMail webhook at `https://<deployment>.convex.site/agentmail/webhook` for `message.received`.
 
 ```
-convex/        schema, http (webhook + /api/proof), email, intake workflow, registry, resolve, extract, letters, board, demo, seed
+convex/        schema, http (webhook + /api/proof), email, intake workflow, recheck + crons, registry, resolve, extract, letters, board, demo, seed
 shared/        engine.ts (verdict), companiesHouse.ts
 components/    agentmail (vendored, Apache-2.0)
 src/           front page, console, record, review, proof (Vite + React on Convex static hosting)

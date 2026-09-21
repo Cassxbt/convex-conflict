@@ -10,12 +10,14 @@
 
 import type * as admin from "../admin.js";
 import type * as board from "../board.js";
+import type * as crons from "../crons.js";
 import type * as demo from "../demo.js";
 import type * as email from "../email.js";
 import type * as extract from "../extract.js";
 import type * as http from "../http.js";
 import type * as intake from "../intake.js";
 import type * as letters from "../letters.js";
+import type * as recheck from "../recheck.js";
 import type * as registry from "../registry.js";
 import type * as resolve from "../resolve.js";
 import type * as seed from "../seed.js";
@@ -29,12 +31,14 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   board: typeof board;
+  crons: typeof crons;
   demo: typeof demo;
   email: typeof email;
   extract: typeof extract;
   http: typeof http;
   intake: typeof intake;
   letters: typeof letters;
+  recheck: typeof recheck;
   registry: typeof registry;
   resolve: typeof resolve;
   seed: typeof seed;

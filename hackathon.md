@@ -8,11 +8,11 @@
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://descriptive-goldfish-956.convex.cloud
 - **Components:** @convex-dev/static-hosting, @firecrawl/firecrawl-convex, @agentmail/convex (vendored in `components/agentmail` with an env declaration), @convex-dev/workflow, @convex-dev/workpool, @convex-dev/rate-limiter
-- **Convex features:** schema, tables, indexes, full-text search, queries, mutations, actions, HTTP actions, scheduled functions, realtime queries
+- **Convex features:** schema, tables, indexes, full-text search, queries, mutations, actions, HTTP actions, scheduled functions, cron jobs, realtime queries
 - **Auth:** no identity provider. Console records are public and fictional; records that arrived by email are projected to public register data only, and reviewing them needs a staff passphrase held as a deployment environment variable. Reviewer decisions are recorded by name beside the engine verdict, never over it.
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-21T07:15:00Z
+- **Last updated:** 2026-09-21T10:05:00Z
 
 ## Log
 
@@ -54,3 +54,6 @@ Judge path. `GET /api/proof` on the live host returns the same live numbers as t
 
 ### 2026-09-21 - submission audit
 Final judge-path audit before the video edit. The README now sends judges to stable CLEAR and CONFLICT receipts instead of assuming a fresh Firecrawl-dependent CLEAR run will succeed; it explains that a rerun may correctly hold when website evidence is unavailable. The CLEAR description now names its one non-conflicting prospect-side history hit, volatile proof counts are no longer frozen in example output, the email claim distinguishes a handoff to AgentMail from delivery, the repository license metadata matches the MIT license, and CI runs the engine suite and production build (`README.md`, `package.json`, `.github/workflows/ci.yml`).
+
+### 2026-09-21 - re-screen, judge path, everyday framing
+The compare step is now its own function and a nightly cron (`convex/crons.ts`) re-runs it for every record no solicitor has decided, enqueued through the workpool so a sweep never competes with live intake. A record only moves towards a hold: new history matches are appended beside the original ones, the verdict is raised with the original kept as `originalVerdict`, and a decided record is never touched; a hit is identified by matter, party and role so a newer rule set's wording does not count as a new match. Proven on the dev deployment by opening a matter for the counterparty of a CLEAR record and watching the sweep raise it to CONFLICT with the new matter named; on production the first sweep stamped nine pending records and changed nothing, which is the correct answer for an unchanged history. Four partner decisions were recorded on production's fictional records so the queue is exercised, and `npm run verify` now asserts one exists (eight live checks). The near-namesake helpers moved into `shared/engine.ts` with tests (18 in total). The front opens with the person running intake rather than with the firm, a **Run the conflict example** button and `#/run/conflict` route file a fictional instruction and open its record while it resolves, so a judge needs no mailbox, and the door and intake copy were corrected to match the every-verdict queue. Convex features: cron jobs, workpool component, mutations, realtime queries (`convex/recheck.ts`, `convex/crons.ts`, `convex/intake.ts`, `convex/schema.ts`, `shared/engine.ts`, `test/engine.test.ts`, `scripts/verify.ts`, `src/views/Home.tsx`, `src/views/Record.tsx`, `src/App.tsx`, `src/lib/route.ts`, `README.md`).
