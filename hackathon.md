@@ -2,6 +2,7 @@
 
 - **Project:** Conflict Clear
 - **Event:** Convex All Gas Hackathon
+- **Who it is for:** the person who opens the post at a small law firm, and the solicitor who signs off. Neither writes code, opens a terminal or holds an API key: an email arrives, a verdict and a written record appear, and a named person decides.
 - **What it does:** Someone running intake at a small law firm, or the sole practitioner who is the firm, gets an instruction by email and has to answer it the same morning. Every party named is resolved to a Companies House entity (using the sender's own website for the aliases the registry cannot see), the firm's matter history is searched including previous names, and the result is CLEAR, CONFLICT or NEEDS_REVIEW with a written search record. Only CLEAR produces an engagement draft, and a solicitor reviews every outcome.
 - **Live app:** https://descriptive-goldfish-956.convex.site
 - **Repo:** https://github.com/Cassxbt/convex-conflict
@@ -14,7 +15,7 @@
 - **Auth:** no identity provider. Console records are public and fictional; records that arrived by email are projected to public register data only, and reviewing them needs a staff passphrase held as a deployment environment variable. Reviewer decisions are recorded by name beside the engine verdict, never over it.
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-22T14:20:00Z
+- **Last updated:** 2026-09-22T15:30:00Z
 
 ## Log
 

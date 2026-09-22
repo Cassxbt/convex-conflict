@@ -11,7 +11,7 @@
 ![Stack](https://img.shields.io/badge/Convex%20·%20AgentMail%20·%20Firecrawl%20·%20OpenAI-1f1f23)
 ![Register](https://img.shields.io/badge/Companies%20House-live%20API-0b5fff)
 
-### You run intake at a small firm, or you are the firm. An instruction lands at 9:04 and needs an answer before lunch. Each named party is resolved to a registered entity or the case is held; matter history is searched across current and previous names, and only CLEAR can draft a preliminary letter.
+### You run intake at a small firm, or you are the firm. An instruction lands at 9:04 and needs an answer before lunch. Conflict Clear reads the email, resolves every party named to a registered company including the names it used to trade under, searches the firm's history, and answers CLEAR, CONFLICT or NEEDS_REVIEW with a record you can hand to a partner. No terminal, no API key, no spreadsheet.
 
 Keyword conflict searches miss the company that changed its name. Company 08680755 was **Royal Mail plc** until 2022 and is **International Distribution Services Limited** today; a firm that acted for Royal Mail still holds its confidences, and a search for the new name returns nothing. Conflict Clear returns CONFLICT via the company number.
 
@@ -68,7 +68,7 @@ Three specific ways a keyword search fails, each reproduced on the live deployme
 4. **Hold or clear.** CLEAR drafts a preliminary letter into the thread. CONFLICT and NEEDS_REVIEW send a hold notice that gives no reason. Every state lands on the partner queue for a recorded decision; the engine's verdict is never overwritten.
 5. **Re-screen.** A screen is only as current as the history it ran against. A nightly cron re-runs the compare step for every record no solicitor has decided yet, through a workpool so it never competes with live intake. A record only moves towards a hold, new matches are appended beside the original ones, and a decided record is never touched.
 
-Verdict vocabulary a judge can tick: `CLEAR` · `CONFLICT` · `NEEDS_REVIEW`, rule set `cc-rules-v2`.
+Three outcomes, and nothing in between: `CLEAR` · `CONFLICT` · `NEEDS_REVIEW`, under rule set `cc-rules-v2`.
 
 ## Verify it yourself in 30 seconds
 
@@ -147,7 +147,7 @@ The [proof page](https://descriptive-goldfish-956.convex.site/#/proof) lists eve
 | The verdict | **Deterministic.** `cc-rules-v2`, 18 tests, no model in the loop. Its inputs come from a model call plus a deterministic completeness scan; a missed person or trading name is a known limit. |
 | Sign-off | **Recorded, not enforced by identity.** Every verdict waits on the partner queue; a named reviewer records a decision. CLEAR's letter goes out first and says it is preliminary. |
 | Access | **Open, with guards.** Console rate-limited (burst 4, 6/min, 60/h), bodies capped, records public and fictional. Email-originated records are restricted without `STAFF_KEY`. A firm would put all of it behind its identity provider. |
-| Auth | **None.** Convex Auth v2 is alpha; the rules make auth optional. |
+| Auth | **No identity provider.** Records are protected by projection and a deployment passphrase, not by login: console records are fictional and open so anyone can try the product, and email-originated records show public register data only. A firm would put all of it behind its own identity provider. |
 | Legal status | **A screening aid.** CLEAR is a recommendation to the supervising solicitor, who remains responsible under SRA Code paragraph 6. |
 
 ## Tests, local run, layout
