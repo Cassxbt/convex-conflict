@@ -7,7 +7,7 @@
 - **Live app:** https://descriptive-goldfish-956.convex.site
 - **Repo:** https://github.com/Cassxbt/convex-conflict
 - **Video:** https://youtu.be/WYyXEm2k9LI (2:31)
-- **Post:** https://x.com/Cassxbt/status/2102404942866657617
+- **Post:** https://x.com/Cassxbt/status/2102404942866657617 · https://www.linkedin.com/posts/calebchima_company-08680755-was-royal-mail-plc-until-ugcPost-7508181578636845056-qJE9/
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://descriptive-goldfish-956.convex.cloud
 - **Components:** @convex-dev/static-hosting, @firecrawl/firecrawl-convex, @agentmail/convex (vendored in `components/agentmail` with an env declaration), @convex-dev/workflow, @convex-dev/workpool, @convex-dev/rate-limiter
@@ -15,7 +15,7 @@
 - **Auth:** no identity provider. Console records are public and fictional; records that arrived by email are projected to public register data only, and reviewing them needs a staff passphrase held as a deployment environment variable. Reviewer decisions are recorded by name beside the engine verdict, never over it.
 - **AI models:** gpt-5-mini
 - **Started:** 2026-09-19T17:57:41Z
-- **Last updated:** 2026-09-22T15:30:00Z
+- **Last updated:** 2026-09-22T16:15:00Z
 
 ## Log
 
