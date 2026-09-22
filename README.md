@@ -25,7 +25,7 @@ Keyword conflict searches miss the company that changed its name. Company 086807
 
 Every product shot in the submission video comes from the live deployment. An instruction from "Universal PPE Ltd" asks the firm to sue "International Distribution Services Limited". The register resolves the target to 08680755 and lists its previous names; the engine matches the company number against the firm's history, finds it recorded as Royal Mail plc, a former client, and holds the case. The console records a prospect-facing hold notice with no confidential reason, and the partner receives the full receipt.
 
-Video walkthrough: in production. The final public link will replace this line before submission.
+**Video walkthrough (2:31): https://youtu.be/WYyXEm2k9LI** — every shot is the live deployment.
 
 ## Contents
 
